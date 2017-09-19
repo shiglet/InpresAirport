@@ -3,61 +3,25 @@
 //Client
 void Connect(struct sockaddr_in addr , int sHandler)
 {
-    int tailleSockaddr_in = sizeof(struct sockaddr_in);
-	int ret = connect(sHandler, (struct sockaddr *) &addr, tailleSockaddr_in);
-
-	if (ret == -1)
+	int size = sizeof(struct sockaddr_in);
+	
+	if (connect(sHandler, (struct sockaddr *) &addr, size) == -1)
 	{
-		printf("[Error] on socket connect %d\n", errno);
+		string error = "Error while closing socket : ";
 
 		switch(errno)
 		{
-			case EBADF : printf("[Error] EBADF - hsocket doesn't exitst\n");
-					break;
-
-			default : printf("[Error] Unknown error ?\n");
+			case EBADF :
+				error += "EBADF - hsocket doesn't exitst";
+				break;
+			default : 
+				error+= "Unknown error. Errno = " + ToString(errno);
 		}
-
+		Log(error,ERROR_TYPE);
 		Close(sHandler);
 		exit(-1);
 	}
-
-	else
-		printf("Successfull connect\n");
-}
-
-void Close(int sHandler)
-{
-    if(close(sHandler) == -1)
-    {
-        string error = "Error while closing socket : ";
-        switch(errno)
-        {
-            case EBADF:
-                Log(error+"fd isn't a valid open file descriptor.",ERROR_TYPE);
-                break;
-            case EINTR:
-                Log(error+"The close() call was interrupted by a signal; see signal(7).",ERROR_TYPE);
-                break;
-            
-            case EIO : 
-                Log(error+"An I/O error occurred.",ERROR_TYPE);
-                break;
-        }
-        exit(-1);
-    }
-    Log("Successfully closed socket",SUCCESS_TYPE);
-}
-int CreateSocket()
-{
-    int hSocket;
-	if ((hSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
-		Log("Error while creating socket. Errno = "+ToString(errno), ERROR_TYPE);
-		exit(-1);
-	}
-	Log("Successfully created socket\n",SUCCESS_TYPE);
-	return hSocket;
+	Log("Successfull connect to the server",SUCCESS_TYPE);
 }
 
 struct sockaddr_in GetAddr(char * host ,int port)
@@ -71,7 +35,7 @@ struct sockaddr_in GetAddr(char * host ,int port)
 		Log("Error while getting host by name. Errno = "+ToString(errno), ERROR_TYPE);
 		exit(-1);
 	}
-	Log("Successfully get host Info\n",SUCCESS_TYPE);
+	Log("Successfully get host Info",SUCCESS_TYPE);
 
 	memcpy(&ipAddress, infosHost->h_addr, infosHost->h_length);
 	string sAddress = inet_ntoa(ipAddress);
@@ -96,7 +60,7 @@ void Bind(struct sockaddr_in socketAddress ,int hSocket )
 		Close(hSocket);
 		exit(-1);
 	}
-	Log("Bind adresse et port socket OK\n",SUCCESS_TYPE);
+	Log("Bind adresse et port socket OK",SUCCESS_TYPE);
 }
 
 void Listen(int hSocket, int flag)
@@ -117,14 +81,73 @@ int Accept(struct sockaddr_in socketAddress, int listenningSocket )
 	{
 		Log("Error on accept of the socket. Errno = "+ToString(errno),ERROR_TYPE);
 		Close(listenningSocket);
-		exit(1);
+		exit(-1);
 	}
 	Log("Successfully accepted a client connection",SUCCESS_TYPE);
 
 	return serviceSocket;
 }
-/*
-//Client && Server
-int Send(int ,void *,int, int);
-int Receive(int , void* , int ,int);
-*/
+
+int Send(int hSocket ,void * data,int size, int flag)
+{
+	int ret = send(hSocket, data, size, flag);
+	if (ret == -1)
+	{
+		Log("Error while trying to send data" + ToString(errno),ERROR_TYPE);
+		Close(hSocket);
+		exit(-1);
+	}
+	Log("Successfully sended " + ToString(ret) + " bytes",SUCCESS_TYPE);
+
+	return ret;
+}
+
+int Receive(int hSocket, void* data, int size ,int,int flag)
+{
+	int n = recv(hSocket, data, size, flag);
+	if (n == -1)
+	{
+		Log("Error while trying to receive data. Errno = "+ ToString(errno),ERROR_TYPE);
+		Close(hSocket);
+		exit(-1);
+	}
+	Log("Successfully received "+ ToString(n) +" bytes",SUCCESS_TYPE);
+
+	return n;
+}
+
+void Close(int sHandler)
+{
+    if(close(sHandler) == -1)
+    {
+        string error = "Error while closing socket : ";
+        switch(errno)
+        {
+            case EBADF:
+                Log(error+"fd isn't a valid open file descriptor.",ERROR_TYPE);
+                break;
+            case EINTR:
+                Log(error+"The close() call was interrupted by a signal; see signal(7).",ERROR_TYPE);
+                break;
+            
+            case EIO : 
+                Log(error+"An I/O error occurred.",ERROR_TYPE);
+                break;
+        }
+        exit(-1);
+    }
+    Log("Successfully closed socket",SUCCESS_TYPE);
+}
+
+int CreateSocket()
+{
+    int hSocket;
+	if ((hSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	{
+		Log("Error while creating socket. Errno = "+ToString(errno), ERROR_TYPE);
+		exit(-1);
+	}
+	Log("Successfully created socket",SUCCESS_TYPE);
+	return hSocket;
+}
+
