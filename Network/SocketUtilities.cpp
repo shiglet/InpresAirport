@@ -1,5 +1,4 @@
 #include "SocketUtilities.h"
-#include "../Utils/Utilities.h"
 //Client
 void Connect(struct sockaddr_in addr , int sHandler)
 {
@@ -24,13 +23,13 @@ void Connect(struct sockaddr_in addr , int sHandler)
 	Log("Successfull connect to the server",SUCCESS_TYPE);
 }
 
-struct sockaddr_in GetAddr(char * host ,int port)
+struct sockaddr_in GetAddr(string host ,int port)
 {
 	struct hostent * infosHost;
 	struct in_addr ipAddress; /* Adresse Internet au format reseau */
 	struct sockaddr_in socketAddress;
 	/* 2-3. Acquisition des informations sur l'ordinateur local */
-	if ((infosHost = gethostbyname(host)) == 0)
+	if ((infosHost = gethostbyname(host.c_str())) == 0)
 	{
 		Log("Error while getting host by name. Errno = "+ToString(errno), ERROR_TYPE);
 		exit(-1);
@@ -60,7 +59,7 @@ void Bind(struct sockaddr_in socketAddress ,int hSocket )
 		Close(hSocket);
 		exit(-1);
 	}
-	Log("Bind adresse et port socket OK",SUCCESS_TYPE);
+	Log("Successfully binded socket to address",SUCCESS_TYPE);
 }
 
 void Listen(int hSocket, int flag)
@@ -88,7 +87,7 @@ int Accept(struct sockaddr_in socketAddress, int listenningSocket )
 	return serviceSocket;
 }
 
-int Send(int hSocket ,void * data,int size, int flag)
+int Send(int hSocket ,const void * data,int size, int flag)
 {
 	int ret = send(hSocket, data, size, flag);
 	if (ret == -1)
@@ -102,7 +101,7 @@ int Send(int hSocket ,void * data,int size, int flag)
 	return ret;
 }
 
-int Receive(int hSocket, void* data, int size ,int,int flag)
+int Receive(int hSocket, void* data, int size ,int flag)
 {
 	int n = recv(hSocket, data, size, flag);
 	if (n == -1)
@@ -112,7 +111,7 @@ int Receive(int hSocket, void* data, int size ,int,int flag)
 		exit(-1);
 	}
 	Log("Successfully received "+ ToString(n) +" bytes",SUCCESS_TYPE);
-
+	
 	return n;
 }
 

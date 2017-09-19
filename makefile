@@ -1,7 +1,7 @@
 .SILENT:
 
 OBJ = Utilities.o SocketUtilities.o
-EXEC = Client
+EXEC = Client Server
 U = Utils/
 NET = Network/
 all : $(EXEC)
@@ -9,7 +9,9 @@ all : $(EXEC)
 Client: Client.cpp $(OBJ)
 		echo Creation de Client
 		g++ -g -o Client Client.cpp $(OBJ) -Wall
-
+Server: Server.cpp $(OBJ)
+		echo Creation de Server
+		g++ -g -o Server Server.cpp $(OBJ) -Wall
 SocketUtilities.o:	$(NET)SocketUtilities.cpp $(NET)SocketUtilities.h
 		echo Creation de SocketUtilities.o
 		g++ -g -c $(NET)SocketUtilities.cpp
