@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <iostream>
 #include <sstream>
+#include <pthread.h>
 using namespace std;
 
 #endif

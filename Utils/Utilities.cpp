@@ -1,5 +1,5 @@
 #include "Utilities.h"
-void Log(string log, int type = DEFAULT_TYPE)
+void Log(string log, int type)
 {
     switch(type)
     {
