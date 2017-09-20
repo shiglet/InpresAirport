@@ -1,6 +1,7 @@
 .SILENT:
 
-OBJ = Utilities.o SocketUtilities.o
+OBJ = $(B)Utilities.o $(B)SocketUtilities.o
+B = bin/
 EXEC = Client Server Test
 U = Utils/
 NET = Network/
@@ -9,21 +10,21 @@ all : $(EXEC)
 
 Client: Client.cpp $(OBJ)
 		echo Creation de Client
-		$(C) -o Client Client.cpp $(OBJ) -Wall -lnsl -lpthread
+		$(C) -o $(B)Client Client.cpp $(OBJ) -Wall -lnsl -lpthread
 Server: Server.cpp $(OBJ)
 		echo Creation de Server
-		$(C) -o Server Server.cpp $(OBJ) -Wall -lnsl -lpthread
+		$(C) -o $(B)Server Server.cpp $(OBJ) -Wall -lnsl -lpthread
 Test:	Test.cpp $(OBJ)
 		echo Creation de Test
-		$(C) -o Test Test.cpp $(OBJ) -Wall -lnsl -lpthread
-SocketUtilities.o:	$(NET)SocketUtilities.cpp $(NET)SocketUtilities.h
+		$(C) -o $(B)Test Test.cpp $(OBJ) -Wall -lnsl -lpthread
+$(B)SocketUtilities.o:	$(NET)SocketUtilities.cpp $(NET)SocketUtilities.h
 		echo Creation de SocketUtilities.o
-		$(C) -c $(NET)SocketUtilities.cpp
-Utilities.o:	$(U)Utilities.cpp $(U)Utilities.h
+		$(C) -o $(B)SocketUtilities.o -c $(NET)SocketUtilities.cpp
+$(B)Utilities.o:	$(U)Utilities.cpp $(U)Utilities.h
 		echo Creation de Utilities.o
-		$(C) -c $(U)Utilities.cpp
+		$(C) -o $(B)Utilities.o -c $(U)Utilities.cpp
 clean:
-	rm -rf *.o
+	rm -rf $(B)*.o
 
 clobber: clean
-	rm -rf $(EXEC)
+	rm -rf $(B)$(EXEC)
