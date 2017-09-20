@@ -1,4 +1,5 @@
 #include "Utilities.h"
+
 void Log(string log, int type)
 {
     switch(type)
@@ -24,4 +25,28 @@ string ToString(int n)
     std::ostringstream stm ;
     stm << n ;
     return stm.str() ;
+}
+
+Configuration ReadConfigFile()
+{
+    Configuration Config;
+    // Short alias for this namespace
+    namespace pt = boost::property_tree;
+
+    // Create a root
+    pt::ptree root;
+
+    // Load the json file in this ptree
+    pt::read_json("Config/ServerConfigFile.json", root);
+    Config.Host = root.get<string>("host");
+    Config.CheckPort = root.get<int>("checkport");
+    Config.TrameSeparator = root.get<char>("trameseparator");
+    Config.EndTrame = root.get<char>("endtrame");
+    Config.CSVSeparator = root.get<char>("csvseparator");
+    cout<<Config.Host<<" "<<Config.CheckPort<<" "<<Config.TrameSeparator<<" "<<Config.EndTrame<<" "<<Config.CSVSeparator<<" "<<endl;
+    return Config;
+}
+void ReadConfigFileClient()
+{
+
 }

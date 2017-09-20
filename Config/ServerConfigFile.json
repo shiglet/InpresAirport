@@ -1,0 +1,7 @@
+{
+    "host" : "salut",
+    "checkport" : 50000,
+    "trameseparator" : ";",
+    "endtrame" : "#",
+    "csvseparator" : ";"
+}

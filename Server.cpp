@@ -1,5 +1,4 @@
 #include "Network/SocketUtilities.h"
-#include "Utils/Utilities.h"
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 500
 pthread_mutex_t currentIndexMutex;
@@ -63,7 +62,6 @@ int main()
         }
         else
         {
-            /* Il y a une connexion de libre */
             printf("Connexion sur la socket num. %d\n", j);
             pthread_mutex_lock(&currentIndexMutex);
             connectedSocket[j] = serviceSocket;

@@ -2,6 +2,15 @@
 #define UTILITIES_H
 #include "Include.h"
 
+//Struct
+typedef struct
+{
+    string Host;
+    int CheckPort;
+    char TrameSeparator;
+    char EndTrame;
+    char CSVSeparator;
+} Configuration;
 
 //Log
 #define DEFAULT_TYPE 0
@@ -11,6 +20,9 @@
 void Log(string log, int type = DEFAULT_TYPE);
 
 
+//Conf
+Configuration ReadConfigFile();
+void ReadConfigFileClient();
 
 //Others
 string ToString(int);

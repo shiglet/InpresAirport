@@ -1,8 +1,10 @@
 #include "Network/SocketUtilities.h"
-#include "Utils/Utilities.h"
 int sHandler;
+Configuration Config;
 int main()
 {
+    Config = ReadConfigFile();
+    Log(Config.Host,ERROR_TYPE);
     int socket = 0;
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
@@ -23,4 +25,5 @@ int main()
         Log("Sending \""+msg+"\" message",INFO_TYPE);
         Send(socket,msg.c_str(),msg.length(),0);
     }
+    
 }

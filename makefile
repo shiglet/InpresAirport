@@ -1,7 +1,7 @@
 .SILENT:
 
 OBJ = Utilities.o SocketUtilities.o
-EXEC = Client Server
+EXEC = Client Server Test
 U = Utils/
 NET = Network/
 C = g++ -g
@@ -13,6 +13,9 @@ Client: Client.cpp $(OBJ)
 Server: Server.cpp $(OBJ)
 		echo Creation de Server
 		$(C) -o Server Server.cpp $(OBJ) -Wall -lnsl -lpthread
+Test:	Test.cpp $(OBJ)
+		echo Creation de Test
+		$(C) -o Test Test.cpp $(OBJ) -Wall -lnsl -lpthread
 SocketUtilities.o:	$(NET)SocketUtilities.cpp $(NET)SocketUtilities.h
 		echo Creation de SocketUtilities.o
 		$(C) -c $(NET)SocketUtilities.cpp
