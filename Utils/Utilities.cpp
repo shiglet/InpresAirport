@@ -1,5 +1,5 @@
 #include "Utilities.h"
-
+Configuration Config;
 void Log(string log, int type)
 {
     switch(type)
@@ -27,26 +27,40 @@ string ToString(int n)
     return stm.str() ;
 }
 
-Configuration ReadConfigFile()
+void ReadConfigFile()
 {
-    Configuration Config;
-    // Short alias for this namespace
     namespace pt = boost::property_tree;
 
-    // Create a root
     pt::ptree root;
 
     // Load the json file in this ptree
-    pt::read_json("Config/ServerConfigFile.json", root);
+    pt::read_json("../Config/ServerConfigFile.json", root);
     Config.Host = root.get<string>("host");
     Config.CheckPort = root.get<int>("checkport");
     Config.TrameSeparator = root.get<char>("trameseparator");
     Config.EndTrame = root.get<char>("endtrame");
     Config.CSVSeparator = root.get<char>("csvseparator");
-    cout<<Config.Host<<" "<<Config.CheckPort<<" "<<Config.TrameSeparator<<" "<<Config.EndTrame<<" "<<Config.CSVSeparator<<" "<<endl;
-    return Config;
+    Config.LoginFile = root.get<string>("loginfile");
 }
-void ReadConfigFileClient()
-{
 
+//Login 
+bool CheckLogin(string login, string password)
+{
+    using namespace boost;
+    ifstream in(Config.LoginFile.c_str());
+    if (!in.is_open())
+    {
+        Log("Unable to read Login file !",ERROR_TYPE);
+        exit(-1);
+    }
+    string line;
+    while (getline(in,line))
+    {
+        vector<std::string> words;
+        split(words, line, is_any_of(";"),token_compress_on);
+        if(words.size()<2) continue;
+        if(words.at(0) == login && words.at(1)==password)
+            return true;
+    }
+    return false;
 }

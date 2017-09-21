@@ -1,7 +1,8 @@
 {
-    "host" : "salut",
-    "checkport" : 50000,
+    "host" : "192.168.40.128",
+    "checkport" : 25000,
     "trameseparator" : ";",
     "endtrame" : "#",
-    "csvseparator" : ";"
+    "csvseparator" : ";",
+    "loginfile" : "login.csv"
 }

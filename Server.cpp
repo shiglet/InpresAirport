@@ -8,13 +8,15 @@ pthread_t threadHandle[MAX_CLIENTS];
 int currentIndex=-1;
 void * ThreadFunc(int * p);
 int connectedSocket[MAX_CLIENTS] = {-1};
-
 int main()
 {
     int listenningSocket, serviceSocket,j = 0;
     //char buffer[BUFFER_SIZE]={};
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
+
+    Log("Reading config file",INFO_TYPE);
+    ReadConfigFile();
 
     pthread_mutex_init(&currentIndexMutex, NULL);  
 	pthread_cond_init(&currentIndexCond, NULL); 
@@ -38,7 +40,7 @@ int main()
     listenningSocket = CreateSocket();
 
     Log("[Main Thread] Getting address informations",INFO_TYPE);
-    socketAddr = GetAddr("192.168.40.128",5000);
+    socketAddr = GetAddr(Config.Host,Config.CheckPort);
 
     Log("[Main Thread] Binding socket",INFO_TYPE);
     Bind(socketAddr,listenningSocket);
@@ -96,7 +98,7 @@ void * ThreadFunc(int * p)
             msg = string(buffer);
             memset(&buffer, 0, sizeof(buffer));
             Log("Message received : "+msg+" length : "+ToString(msg.length()),INFO_TYPE);
-        }while(msg!="Stop");
+        }while(msg!="Stop" && msg.length()!=0);
         pthread_mutex_lock(&currentIndexMutex);
 		connectedSocket[treatedClient] = -1;
         pthread_mutex_unlock(&currentIndexMutex);
