@@ -8,17 +8,11 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
 #include <boost/algorithm/string/split.hpp> // Include for boost::split
+#include "Utils/Utilities.h"
 using namespace std;
-
+int DisplayMenu();
 int main()
 {
-    int i=0;
-    do
-    {
-        cout<<i<<endl;
-        if(i==10)
-            continue;
-        i++;
-    }while(i!=10);
+    ReadConfigFile();
     return 0;
 }

@@ -115,13 +115,17 @@ int Send(int hSocket ,string data, int flag)
 
 int Receive(int hSocket, void* data, int size ,int flag)
 {
-	int n = recv(hSocket, data, size, flag);
-	if (n == -1)
+	int n,ret = 0;
+	do
 	{
-		Log("Error while trying to receive data. Errno = "+ ToString(errno),ERROR_TYPE);
-		Close(hSocket);
-		exit(-1);
-	}
+		ret = recv(hSocket,(char*) data + n, size-n, flag);
+		if (n == -1)
+		{
+			Log("Error while trying to receive data. Errno = "+ ToString(errno),ERROR_TYPE);
+			Close(hSocket);
+			exit(-1);
+		}
+	}while(n<size && ret !=0);
 	
 	return n;
 }

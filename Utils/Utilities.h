@@ -11,6 +11,7 @@ typedef struct
     char EndTrame;
     char CSVSeparator;
     string LoginFile;
+    string TicketFile;
 } Configuration;
 extern Configuration Config;
 //Log
@@ -27,7 +28,10 @@ void ReadConfigFileClient();
 
 //Others
 string ToString(int);
+vector<string> Tokenize(string message, string key = string()+Config.TrameSeparator+Config.EndTrame);
 
+//Ticket
+bool CheckTicket(string,string);
 //Login
 bool CheckLogin(string,string);
 

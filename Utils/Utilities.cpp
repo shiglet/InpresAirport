@@ -42,6 +42,7 @@ void ReadConfigFile()
     Config.EndTrame = root.get<char>("endtrame");
     Config.CSVSeparator = root.get<char>("csvseparator");
     Config.LoginFile = root.get<string>("loginfile");
+    Config.TicketFile = root.get<string>("ticketfile");
 }
 
 //Login 
@@ -57,11 +58,39 @@ bool CheckLogin(string login, string password)
     string line;
     while (getline(in,line))
     {
-        vector<std::string> tokens;
-        split(tokens, line, is_any_of(";"),token_compress_on);
+        vector<std::string> tokens = Tokenize(line,string() + Config.CSVSeparator);
         if(tokens.size()<2) continue;
         if(tokens.at(0) == login && tokens.at(1)==password)
             return true;
     }
     return false;
+}
+
+
+//CheckTicket
+bool CheckTicket(string ticketNumber, string count)
+{
+    using namespace boost;
+    ifstream in(Config.TicketFile.c_str());
+    if (!in.is_open())
+    {
+        Log("Unable to read Ticket file !",ERROR_TYPE);
+        exit(-1);
+    }
+    string line;
+    while (getline(in,line))
+    {
+        vector<std::string> tokens = Tokenize(line,string() + Config.CSVSeparator);
+        if(tokens.size()<2) continue;
+        if(tokens.at(0) == ticketNumber && tokens.at(1)==count)
+            return true;
+    }
+    return false;
+}
+vector<string> Tokenize(string message, string key)
+{
+    using namespace boost;
+    vector<std::string> tokens;
+    split(tokens, message, is_any_of(key),token_compress_on);
+    return tokens;
 }

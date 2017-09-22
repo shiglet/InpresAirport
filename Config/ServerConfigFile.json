@@ -4,5 +4,6 @@
     "trameseparator" : ";",
     "endtrame" : "#",
     "csvseparator" : ";",
-    "loginfile" : "login.csv"
+    "loginfile" : "login.csv",
+    "ticketfile" : "ticket.csv"
 }

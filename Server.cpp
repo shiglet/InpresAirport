@@ -11,7 +11,6 @@ int connectedSocket[MAX_CLIENTS] = {-1};
 int main()
 {
     int listenningSocket, serviceSocket,j = 0;
-    //char buffer[BUFFER_SIZE]={};
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
 
@@ -77,7 +76,6 @@ void * ThreadFunc(int * p)
 {
     using namespace boost;
 
-    char buffer[BUFFER_SIZE]={};
     string message;
     int treatedClient,socket;
     int state = NON_AUTHENTICATED;
@@ -94,33 +92,52 @@ void * ThreadFunc(int * p)
         socket = connectedSocket[treatedClient];
 
         pthread_mutex_unlock(&currentIndexMutex);
+
+        state = NON_AUTHENTICATED;
         do
         {
-            // Log("Receiving a message",INFO_TYPE);
-            // Receive(socket,&buffer,sizeof(buffer),0);
-            // msg = string(buffer);
-            // memset(&buffer, 0, sizeof(buffer));
-            // Log("Message received : "+msg+" length : "+ToString(msg.length()),INFO_TYPE);
             message = Receive(socket);
-            vector<std::string> tokens;
-            split(tokens, message, is_any_of(";#"),token_compress_on);
+            vector<std::string> tokens = Tokenize(message);
             if(tokens[0]=="") continue;
             switch(atoi(tokens[0].c_str()))
             {
-                case LOGIN_REQUEST :
-                    if(state != AUTHENTICATED)
+                case LOGIN_OFFICER :
+                    if(state == AUTHENTICATED) break;
+                    if(CheckLogin(tokens[1],tokens[2]))
                     {
-                        if(CheckLogin(tokens[1],tokens[2]))
-                        {
-                            state = AUTHENTICATED;
-                            Send(socket,ToString(LOGIN_SUCCESS)+Config.EndTrame);
-                        }
-                        else
-                            Send(socket,ToString(LOGIN_FAILED)+Config.EndTrame);
+                        Log("Logging success",SUCCESS_TYPE);
+                        state = AUTHENTICATED;
+                        Send(socket,ToString(LOGIN_SUCCESS)+Config.EndTrame);
+                        break;
                     }
+                    Log("Logging failed",ERROR_TYPE);
+                    Send(socket,ToString(LOGIN_FAILED)+Config.EndTrame);
+                    break;
+                case LOGOUT_REQUEST : 
+                    if(state == NON_AUTHENTICATED) 
+                    {
+                        Log("User is not authenticated, disconnection failed...",ERROR_TYPE);
+                        Send(socket,ToString(LOGOUT_FAILED) + Config.EndTrame);
+                        break;
+                    }
+                    Log("Succcessfully disconnected",SUCCESS_TYPE);
+                    Send(socket,ToString(LOGOUT_SUCCESS) + Config.EndTrame);
+                    message = "STOP";
                     break;
                 default : 
                     Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);
+                    break;
+                case CHECK_TICKET : 
+                    if(state != AUTHENTICATED) break;
+                    if(CheckTicket(tokens[1],tokens[2]))
+                    {
+                        Log("Check ticket success",SUCCESS_TYPE);
+                        Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
+                        break;
+                    }
+                    Log("Check ticket failed",ERROR_TYPE);
+                    Send(socket,ToString(CHECK_FAILED)+Config.EndTrame);
+
                     break;
             }
         }while(message!="Stop" && message.length()!=0);
