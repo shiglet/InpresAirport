@@ -1,22 +1,25 @@
 #include "Network/SocketUtilities.h"
-int sHandler;
-
+#include "Protocol/CIMP.h"
+int cliSocket;
+char buffer[BUFFER_SIZE]={0};
+string message;
+void SendLogin(string l, string p);
+bool ThreatLoginResponse(string msg);
 int main()
 {
     ReadConfigFile();
     Log(Config.Host,ERROR_TYPE);
-    int socket = 0;
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
 
     Log("Creating socket :",INFO_TYPE);    
-    socket = CreateSocket();
+    cliSocket = CreateSocket();
 
     Log("Getting address informations",INFO_TYPE);
     socketAddr = GetAddr(Config.Host,Config.CheckPort);
 
     Log("Connecting to the server",INFO_TYPE);
-    Connect(socketAddr,socket);
+    Connect(socketAddr,cliSocket);
 
     string msg,login,pass;
     bool authenticated = false;
@@ -33,9 +36,18 @@ int main()
         cin>>login;
         cout<<"Mot de passe : ";
         cin>>pass;
-        if((authenticated = CheckLogin(login,pass)))
+        SendLogin(login,pass);
+        message = Receive(cliSocket);
+        if((authenticated = (message == ToString(LOGIN_SUCCESS)+Config.EndTrame)))
             break;
         Log("La combinaison de login/password est incorrecte !",ERROR_TYPE);
     }while(1);
-    
+    Log("Authentification réussie.",SUCCESS_TYPE);
+    Close(cliSocket);
+}
+void SendLogin(string l, string p)
+{
+    string s = ToString(LOGIN_REQUEST)+Config.TrameSeparator+l+Config.TrameSeparator+p+Config.EndTrame;
+    Log("Envoie de "+s);
+    Send(cliSocket,&s[0],s.length());
 }

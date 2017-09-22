@@ -1,6 +1,6 @@
 #include "Network/SocketUtilities.h"
+#include "Protocol/CIMP.h"
 #define MAX_CLIENTS 5
-#define BUFFER_SIZE 500
 pthread_mutex_t currentIndexMutex;
 pthread_cond_t currentIndexCond;
 pthread_t threadHandle[MAX_CLIENTS];
@@ -75,9 +75,12 @@ int main()
 }
 void * ThreadFunc(int * p)
 {
+    using namespace boost;
+
     char buffer[BUFFER_SIZE]={};
-    string msg;
+    string message;
     int treatedClient,socket;
+    int state = NON_AUTHENTICATED;
 
     while(1)
 	{
@@ -93,12 +96,34 @@ void * ThreadFunc(int * p)
         pthread_mutex_unlock(&currentIndexMutex);
         do
         {
-            Log("Receiving a message",INFO_TYPE);
-            Receive(socket,&buffer,sizeof(buffer),0);
-            msg = string(buffer);
-            memset(&buffer, 0, sizeof(buffer));
-            Log("Message received : "+msg+" length : "+ToString(msg.length()),INFO_TYPE);
-        }while(msg!="Stop" && msg.length()!=0);
+            // Log("Receiving a message",INFO_TYPE);
+            // Receive(socket,&buffer,sizeof(buffer),0);
+            // msg = string(buffer);
+            // memset(&buffer, 0, sizeof(buffer));
+            // Log("Message received : "+msg+" length : "+ToString(msg.length()),INFO_TYPE);
+            message = Receive(socket);
+            vector<std::string> tokens;
+            split(tokens, message, is_any_of(";#"),token_compress_on);
+            if(tokens[0]=="") continue;
+            switch(atoi(tokens[0].c_str()))
+            {
+                case LOGIN_REQUEST :
+                    if(state != AUTHENTICATED)
+                    {
+                        if(CheckLogin(tokens[1],tokens[2]))
+                        {
+                            state = AUTHENTICATED;
+                            Send(socket,ToString(LOGIN_SUCCESS)+Config.EndTrame);
+                        }
+                        else
+                            Send(socket,ToString(LOGIN_FAILED)+Config.EndTrame);
+                    }
+                    break;
+                default : 
+                    Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);
+                    break;
+            }
+        }while(message!="Stop" && message.length()!=0);
         pthread_mutex_lock(&currentIndexMutex);
 		connectedSocket[treatedClient] = -1;
         pthread_mutex_unlock(&currentIndexMutex);

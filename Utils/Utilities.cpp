@@ -1,5 +1,6 @@
 #include "Utilities.h"
 Configuration Config;
+
 void Log(string log, int type)
 {
     switch(type)
@@ -56,10 +57,10 @@ bool CheckLogin(string login, string password)
     string line;
     while (getline(in,line))
     {
-        vector<std::string> words;
-        split(words, line, is_any_of(";"),token_compress_on);
-        if(words.size()<2) continue;
-        if(words.at(0) == login && words.at(1)==password)
+        vector<std::string> tokens;
+        split(tokens, line, is_any_of(";"),token_compress_on);
+        if(tokens.size()<2) continue;
+        if(tokens.at(0) == login && tokens.at(1)==password)
             return true;
     }
     return false;

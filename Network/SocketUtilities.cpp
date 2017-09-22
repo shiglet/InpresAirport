@@ -96,7 +96,19 @@ int Send(int hSocket ,const void * data,int size, int flag)
 		Close(hSocket);
 		exit(-1);
 	}
-	Log("Successfully sended " + ToString(ret) + " bytes",SUCCESS_TYPE);
+
+	return ret;
+}
+
+int Send(int hSocket ,string data, int flag)
+{
+	int ret = send(hSocket, data.c_str(), data.length(), flag);
+	if (ret == -1)
+	{
+		Log("Error while trying to send data" + ToString(errno),ERROR_TYPE);
+		Close(hSocket);
+		exit(-1);
+	}
 
 	return ret;
 }
@@ -110,9 +122,29 @@ int Receive(int hSocket, void* data, int size ,int flag)
 		Close(hSocket);
 		exit(-1);
 	}
-	Log("Successfully received "+ ToString(n) +" bytes",SUCCESS_TYPE);
 	
 	return n;
+}
+
+string Receive(int hSocket,int flag)
+{	
+	string msg="";
+	char byte;
+	int n;
+	do
+	{
+		n= recv(hSocket, &byte , 1 , flag);
+		if (n == -1)
+		{
+			Log("Error while trying to receive data. Errno = "+ ToString(errno),ERROR_TYPE);
+			Close(hSocket);
+			exit(-1);
+		}
+		else if(n>0)
+			msg+= byte;
+	}while(byte != Config.EndTrame && n!=0);
+	Log("Message received :"+msg,SUCCESS_TYPE);
+	return msg;
 }
 
 void Close(int sHandler)
