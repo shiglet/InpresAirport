@@ -11,7 +11,6 @@ int DisplayMenu();
 int main()
 {
     ReadConfigFile();
-    Log(Config.Host,ERROR_TYPE);
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
 
@@ -55,8 +54,9 @@ int main()
             case 1 :
             //Check ticket
             {
-                cout<<"Numéro de billet ?";
+                cout<<"Numéro de billet ?"+Config.FlyNumber;
                 cin>>ticketNumber;
+                ticketNumber = Config.FlyNumber + ticketNumber;
                 cout<<"Nombre d'accompagnants ?";
                 cin>>passager;
                 Send(cliSocket,ToString(CHECK_TICKET)+Config.TrameSeparator+ticketNumber+Config.TrameSeparator+passager+Config.EndTrame);
@@ -155,10 +155,12 @@ void TreatWeight(string message)
     cout<<"Paiement effectué ? ";cin>>pay;
     if(pay=="Y")
     {
+        Log("Payement effectué avec succés",SUCCESS_TYPE);
         Send(cliSocket,ToString(PAYMENT_DONE)+Config.EndTrame);
     }
     else if(pay=="N")
     {
         Log("Payement annulé",ERROR_TYPE);
+        Send(cliSocket,ToString(PAYMENT_CANCELED)+Config.EndTrame);
     }
 }

@@ -9,6 +9,7 @@
 #define CHECK_FAILED 9
 #define CHECK_LUGGAGE 10
 #define PAYMENT_DONE 11
+#define PAYMENT_CANCELED 12
 
 //state
 #define AUTHENTICATED 100

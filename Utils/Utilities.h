@@ -12,6 +12,8 @@ typedef struct
     char CSVSeparator;
     string LoginFile;
     string TicketFile;
+    string Fly;
+    string FlyNumber;
 } Configuration;
 extern Configuration Config;
 //Log
@@ -36,5 +38,7 @@ bool CheckTicket(string,string);
 //Login
 bool CheckLogin(string,string);
 
+//Luggages
+void SaveLuggage(int,string,string);
 #endif
 

@@ -22,7 +22,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
 #include <boost/algorithm/string/split.hpp> // Include for boost::split
-
+#include <boost/algorithm/string/replace.hpp>
 using namespace std;
 
 //Define

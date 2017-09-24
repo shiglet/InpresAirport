@@ -43,6 +43,8 @@ void ReadConfigFile()
     Config.CSVSeparator = root.get<char>("csvseparator");
     Config.LoginFile = root.get<string>("loginfile");
     Config.TicketFile = root.get<string>("ticketfile");
+    Config.Fly = root.get<string>("fly");
+    Config.FlyNumber = root.get<string>("flynumber");
 }
 
 //Login 
@@ -94,5 +96,18 @@ vector<string> Tokenize(string message, string key)
     split(tokens, message, is_any_of(key),token_compress_on);
     return tokens;
 }
+
+void SaveLuggage(int n ,string ticketNumber,string valise)
+{
+
+    string fileName = Config.FlyNumber;
+    boost::replace_all(fileName, "-", "_");
+    fileName += "lug.csv";
+    ofstream file(fileName.c_str(),ios::out | ios::app);
+    file<<ticketNumber<<"-"<<setfill('0')<<setw(3)<<n<<Config.CSVSeparator;
+    valise == "O" ? file<<"VALISE"<<endl : file<<"PASVALISE"<<endl;
+    file.close();
+}
+
 template string ToString<int>(int);
 template string ToString<float>(float);

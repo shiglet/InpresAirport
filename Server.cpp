@@ -76,7 +76,7 @@ void * ThreadFunc(int * p)
 {
     using namespace boost;
 
-    string message;
+    string message,ticketNumber;
     vector<string> tempoTokens;
     int treatedClient,socket;
     int state = NON_AUTHENTICATED;
@@ -105,7 +105,7 @@ void * ThreadFunc(int * p)
             switch(atoi(tokens[0].c_str()))
             {
                 case LOGIN_OFFICER :
-                    if(state == AUTHENTICATED || state == CHECKING) break;
+                    if(state != NON_AUTHENTICATED) break;
                     if(CheckLogin(tokens[1],tokens[2]))
                     {
                         Log("Logging success",SUCCESS_TYPE);
@@ -131,6 +131,7 @@ void * ThreadFunc(int * p)
                     if(state != AUTHENTICATED) break;
                     if(CheckTicket(tokens[1],tokens[2]))
                     {
+                        ticketNumber = tokens[1];
                         Log("Check ticket success",SUCCESS_TYPE);
                         state = CHECKING;
                         Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
@@ -144,7 +145,7 @@ void * ThreadFunc(int * p)
                     {
                         if(state != CHECKING) break;
                         tempoTokens = tokens;
-                        float totalWeight, exceededWeight, toPay = 0.0;
+                        float totalWeight = 0.0, exceededWeight = 0.0, toPay = 0.0;
                         for(std::vector<string>::size_type i = 1; i != tokens.size(); i+=2)
                         {
                             float weight = atof(tokens[i].c_str());
@@ -155,9 +156,24 @@ void * ThreadFunc(int * p)
                         Send(socket,ToString(CHECK_LUGGAGE)+Config.TrameSeparator+ToString(totalWeight)+Config.TrameSeparator+ToString(exceededWeight)+Config.TrameSeparator+ToString(toPay)+Config.EndTrame);
                     }
                     break;
-                    case PAYMENT_DONE : 
-                        Log("Payement effectuée",SUCCESS_TYPE);
-                        //TODO: open file and add luggages info
+                case PAYMENT_DONE : 
+                    {
+                        if(state != CHECKING) break;
+                        Log("Successfully done payment",SUCCESS_TYPE);
+                        int n =1;
+                        for(std::vector<string>::size_type i = 1; i != tempoTokens.size(); i+=2)
+                        {
+                            SaveLuggage(n,ticketNumber,tempoTokens[i+1]);
+                            n++;
+                        }
+                        state = AUTHENTICATED;
+                        tempoTokens.clear();
+                    }
+                    break;
+                case PAYMENT_CANCELED :
+                    if(state != CHECKING) break;
+                    Log("Payement canceled",ERROR_TYPE);
+                    state = AUTHENTICATED;
                     break;
                 default : 
                     Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);

@@ -5,5 +5,7 @@
     "endtrame" : "#",
     "csvseparator" : ";",
     "loginfile" : "login.csv",
-    "ticketfile" : "ticket.csv"
+    "ticketfile" : "ticket.csv",
+    "fly" : "VOL 362 POWDER-AIRLINES - Peshawar 6h30",
+    "flynumber" : "362-22082017-"
 }

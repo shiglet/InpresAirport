@@ -14,27 +14,9 @@ int DisplayMenu();
 int main()
 {
     ReadConfigFile();
-    string poids,valise,msg;
-    int count;
-    msg+=ToString(10);
-    cin>>count;
-    for(int i=0;i<count;i++)
-    {
-        cout<<"Poids du baggages n°"+ToString(i+1)+" : ";
-        cin>>poids;
-        cout<<"Valise ? : ";
-        cin>>valise;
-        msg+= Config.TrameSeparator+poids+Config.TrameSeparator+valise;
-    }
-    msg+= Config.EndTrame;
-    cout<<msg;
-    vector<string> tokens = Tokenize(msg);
-    tokens.pop_back();
-    for(std::vector<string>::size_type i = 1; i != tokens.size(); i+=2)
-    {
-        cout<<endl<<tokens[i];
-        cout<<tokens[i+1];
-    }
-        
+    SaveLuggage(1,Config.FlyNumber+ToString(100),"O");
+    SaveLuggage(2,Config.FlyNumber+ToString(100),"O");
+    SaveLuggage(3,Config.FlyNumber+ToString(100),"N");
+    SaveLuggage(15,Config.FlyNumber+ToString(100),"O");
     return 0;
 }
