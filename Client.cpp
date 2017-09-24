@@ -13,7 +13,6 @@ int main()
     ReadConfigFile();
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
-
     Log("Creating socket :",INFO_TYPE);    
     cliSocket = CreateSocket();
 
@@ -22,7 +21,6 @@ int main()
 
     Log("Connecting to the server",INFO_TYPE);
     Connect(socketAddr,cliSocket);
-
     string msg,login,pass;
     bool authenticated = false;
     int choix;
@@ -49,7 +47,9 @@ int main()
         {
             case 0 :
             //Disconnect 
-                continue;
+                authenticated = false;
+                Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
+                TreatLogout(Receive(cliSocket));
                 break;
             case 1 :
             //Check ticket
@@ -75,16 +75,14 @@ int main()
                 break;
             }
             case 2 :
-            //Exit
+                //Exit
                 Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
                 TreatLogout(Receive(cliSocket));
-                exit(0);
+                Log("Closing socket",INFO_TYPE);
+                Close(cliSocket);            
                 break;
         }
-    }while(choix!=0);
-
-    Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
-    TreatLogout(Receive(cliSocket));
+    }while(choix!=2);
 }
 
 void SendLogin(string l, string p)
@@ -105,8 +103,6 @@ void TreatLogout(string msg)
     {
         Log("Problème lors de la déconnexion : "+tokens[1]);
     }
-    Log("Closing socket",INFO_TYPE);
-    Close(cliSocket);
 }
 
 int DisplayMenu()
@@ -140,7 +136,6 @@ void TreatLuggages(int passager)
     }
     msg+= Config.EndTrame;
     Send(cliSocket, msg);
-    Log("Envoyééé");
 }
 void TreatWeight(string message)
 {

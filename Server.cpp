@@ -63,7 +63,7 @@ int main()
         }
         else
         {
-            printf("Connexion sur la socket num. %d\n", j);
+            Log("Connected on the socket num. "+ToString(j));
             pthread_mutex_lock(&currentIndexMutex);
             connectedSocket[j] = serviceSocket;
             currentIndex = j;
@@ -124,6 +124,7 @@ void * ThreadFunc(int * p)
                         break;
                     }
                     Log("Succcessfully disconnected",SUCCESS_TYPE);
+                    state = NON_AUTHENTICATED;
                     Send(socket,ToString(LOGOUT_SUCCESS) + Config.EndTrame);
                     message = "STOP";
                     break;
