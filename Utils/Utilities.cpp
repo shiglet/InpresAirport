@@ -20,8 +20,8 @@ void Log(string log, int type)
     }
     cout<<log<<"\033[0m\n";
 }
-
-string ToString(int n)
+template<typename T>
+string ToString(T n)
 {
     std::ostringstream stm ;
     stm << n ;
@@ -94,3 +94,5 @@ vector<string> Tokenize(string message, string key)
     split(tokens, message, is_any_of(key),token_compress_on);
     return tokens;
 }
+template string ToString<int>(int);
+template string ToString<float>(float);

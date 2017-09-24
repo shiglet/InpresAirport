@@ -2,9 +2,11 @@
 #include "Protocol/CIMP.h"
 int cliSocket;
 char buffer[BUFFER_SIZE]={0};
-string message;
+string ticketNumber, passager,message;
 void SendLogin(string l, string p);
 void TreatLogout(string msg);
+void TreatLuggages(int);
+void TreatWeight(string message);
 int DisplayMenu();
 int main()
 {
@@ -53,14 +55,23 @@ int main()
             case 1 :
             //Check ticket
             {
-                string ticketNumber, count;
-
                 cout<<"Numéro de billet ?";
                 cin>>ticketNumber;
                 cout<<"Nombre d'accompagnants ?";
-                cin>>count;
-                Send(cliSocket,ToString(CHECK_TICKET)+Config.TrameSeparator+ticketNumber+Config.TrameSeparator+count+Config.EndTrame);
+                cin>>passager;
+                Send(cliSocket,ToString(CHECK_TICKET)+Config.TrameSeparator+ticketNumber+Config.TrameSeparator+passager+Config.EndTrame);
                 message = Receive(cliSocket);
+                if(message == ToString(CHECK_SUCCESS)+Config.EndTrame)
+                {
+                    Log("Le billet est correcte, encodage des/du baggage(s) ...",SUCCESS_TYPE);
+                    TreatLuggages(atoi(passager.c_str()));
+                    message = Receive(cliSocket);
+                    TreatWeight(message);
+                }
+                else
+                {
+                    Log("Le check du billet a échoué",ERROR_TYPE);
+                }
                 break;
             }
             case 2 :
@@ -114,4 +125,40 @@ int DisplayMenu()
         cin>>choix;
     }while(choix<0 || choix>2);
     return choix;
+}
+void TreatLuggages(int passager)
+{
+    string poids,valise,msg;
+    msg+=ToString(CHECK_LUGGAGE);
+    for(int i=0;i<passager;i++)
+    {
+        cout<<"Poids du baggages n°"+ToString(i+1)+" : ";
+        cin>>poids;
+        cout<<"Valise ? : ";
+        cin>>valise;
+        msg+= Config.TrameSeparator+poids+Config.TrameSeparator+valise;
+    }
+    msg+= Config.EndTrame;
+    Send(cliSocket, msg);
+    Log("Envoyééé");
+}
+void TreatWeight(string message)
+{
+    vector<string> tokens = Tokenize(message);
+    string pay;
+    tokens.pop_back();
+    cout<<"Numéro de billet : "+ticketNumber<<endl;
+    cout<<"Nombre d'accompagnants : "+passager<<endl;
+    cout<<"Poids total bagages : "+tokens[1]<<endl;
+    cout<<"Excédent poids : "+tokens[2]<<"kg"<<endl;
+    cout<<"Supplément à payer : "+tokens[3]+" EUR"<<endl;
+    cout<<"Paiement effectué ? ";cin>>pay;
+    if(pay=="Y")
+    {
+        Send(cliSocket,ToString(PAYMENT_DONE)+Config.EndTrame);
+    }
+    else if(pay=="N")
+    {
+        Log("Payement annulé",ERROR_TYPE);
+    }
 }

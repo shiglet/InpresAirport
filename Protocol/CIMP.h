@@ -13,3 +13,4 @@
 //state
 #define AUTHENTICATED 100
 #define NON_AUTHENTICATED 101
+#define CHECKING 102

@@ -27,7 +27,8 @@ void ReadConfigFile();
 void ReadConfigFileClient();
 
 //Others
-string ToString(int);
+template<typename T>
+string ToString(T);
 vector<string> Tokenize(string message, string key = string()+Config.TrameSeparator+Config.EndTrame);
 
 //Ticket

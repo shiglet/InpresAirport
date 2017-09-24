@@ -77,6 +77,7 @@ void * ThreadFunc(int * p)
     using namespace boost;
 
     string message;
+    vector<string> tempoTokens;
     int treatedClient,socket;
     int state = NON_AUTHENTICATED;
 
@@ -96,13 +97,15 @@ void * ThreadFunc(int * p)
         state = NON_AUTHENTICATED;
         do
         {
+            Log("Waiting for a receive");
             message = Receive(socket);
             vector<std::string> tokens = Tokenize(message);
+            tokens.pop_back();
             if(tokens[0]=="") continue;
             switch(atoi(tokens[0].c_str()))
             {
                 case LOGIN_OFFICER :
-                    if(state == AUTHENTICATED) break;
+                    if(state == AUTHENTICATED || state == CHECKING) break;
                     if(CheckLogin(tokens[1],tokens[2]))
                     {
                         Log("Logging success",SUCCESS_TYPE);
@@ -124,20 +127,40 @@ void * ThreadFunc(int * p)
                     Send(socket,ToString(LOGOUT_SUCCESS) + Config.EndTrame);
                     message = "STOP";
                     break;
-                default : 
-                    Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);
-                    break;
                 case CHECK_TICKET : 
                     if(state != AUTHENTICATED) break;
                     if(CheckTicket(tokens[1],tokens[2]))
                     {
                         Log("Check ticket success",SUCCESS_TYPE);
+                        state = CHECKING;
                         Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
                         break;
                     }
                     Log("Check ticket failed",ERROR_TYPE);
                     Send(socket,ToString(CHECK_FAILED)+Config.EndTrame);
 
+                    break;
+                case CHECK_LUGGAGE :
+                    {
+                        if(state != CHECKING) break;
+                        tempoTokens = tokens;
+                        float totalWeight, exceededWeight, toPay = 0.0;
+                        for(std::vector<string>::size_type i = 1; i != tokens.size(); i+=2)
+                        {
+                            float weight = atof(tokens[i].c_str());
+                            totalWeight += weight;
+                            exceededWeight += weight > 20 ? weight - 20 : 0.0;
+                        }
+                        toPay = exceededWeight * 2.5;
+                        Send(socket,ToString(CHECK_LUGGAGE)+Config.TrameSeparator+ToString(totalWeight)+Config.TrameSeparator+ToString(exceededWeight)+Config.TrameSeparator+ToString(toPay)+Config.EndTrame);
+                    }
+                    break;
+                    case PAYMENT_DONE : 
+                        Log("Payement effectuée",SUCCESS_TYPE);
+                        //TODO: open file and add luggages info
+                    break;
+                default : 
+                    Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);
                     break;
             }
         }while(message!="Stop" && message.length()!=0);
