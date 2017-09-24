@@ -26,7 +26,6 @@ void Log(string log, int type = DEFAULT_TYPE);
 
 //Conf
 void ReadConfigFile();
-void ReadConfigFileClient();
 
 //Others
 template<typename T>

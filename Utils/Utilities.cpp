@@ -35,7 +35,7 @@ void ReadConfigFile()
     pt::ptree root;
 
     // Load the json file in this ptree
-    pt::read_json("../Config/ServerConfigFile.json", root);
+    pt::read_json("../Config/ConfigFile.json", root);
     Config.Host = root.get<string>("host");
     Config.CheckPort = root.get<int>("checkport");
     Config.TrameSeparator = root.get<char>("trameseparator");
