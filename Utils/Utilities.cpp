@@ -19,6 +19,7 @@ void Log(string log, int type)
             break;
     }
     cout<<log<<"\033[0m\n";
+    
 }
 template<typename T>
 string ToString(T n)
@@ -89,6 +90,7 @@ bool CheckTicket(string ticketNumber, string count)
     }
     return false;
 }
+
 vector<string> Tokenize(string message, string key)
 {
     using namespace boost;

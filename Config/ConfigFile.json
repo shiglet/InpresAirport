@@ -1,6 +1,6 @@
 {
     "host" : "192.168.40.128",
-    "checkport" : 25000,
+    "checkport" : 32010,
     "trameseparator" : ";",
     "endtrame" : "#",
     "csvseparator" : ";",
