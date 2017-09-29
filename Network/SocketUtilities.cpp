@@ -97,6 +97,7 @@ int Send(int hSocket ,const void * data,int size, int flag)
 		exit(-1);
 	}
 
+	printf("Test");
 	return ret;
 }
 
