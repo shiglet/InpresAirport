@@ -2,6 +2,8 @@
 #include "Protocol/CIMP.h"
 #define MAX_CLIENTS 5
 pthread_mutex_t currentIndexMutex;
+pthread_mutex_t luggageFileMutex;
+pthread_mutex_t ticketFileMutex;
 pthread_cond_t currentIndexCond;
 pthread_t threadHandle[MAX_CLIENTS];
 
@@ -17,7 +19,9 @@ int main()
     Log("Reading config file",INFO_TYPE);
     ReadConfigFile();
 
-    pthread_mutex_init(&currentIndexMutex, NULL);  
+    pthread_mutex_init(&currentIndexMutex, NULL); 
+    pthread_mutex_init(&luggageFileMutex, NULL);
+    pthread_mutex_init(&ticketFileMutex, NULL);
 	pthread_cond_init(&currentIndexCond, NULL); 
 	for (int i=0; i<MAX_CLIENTS; i++) 
         connectedSocket[i] = -1; 
@@ -126,21 +130,25 @@ void * ThreadFunc(int * p)
                     Log("Succcessfully disconnected",SUCCESS_TYPE);
                     state = NON_AUTHENTICATED;
                     Send(socket,ToString(LOGOUT_SUCCESS) + Config.EndTrame);
-                    message = "STOP";
+                    message = "DISCONNECTED";
                     break;
                 case CHECK_TICKET : 
-                    if(state != AUTHENTICATED) break;
-                    if(CheckTicket(tokens[1],tokens[2]))
                     {
-                        ticketNumber = tokens[1];
-                        Log("Check ticket success",SUCCESS_TYPE);
-                        state = CHECKING;
-                        Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
-                        break;
+                        if(state != AUTHENTICATED) break;
+                        pthread_mutex_lock(&ticketFileMutex);
+                        bool ticket = CheckTicket(tokens[1],tokens[2]);
+                        pthread_mutex_unlock(&ticketFileMutex);
+                        if(ticket)
+                        {
+                            ticketNumber = tokens[1];
+                            Log("Check ticket success",SUCCESS_TYPE);
+                            state = CHECKING;
+                            Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
+                            break;
+                        }
+                        Log("Check ticket failed",ERROR_TYPE);
+                        Send(socket,ToString(CHECK_FAILED)+Config.EndTrame);
                     }
-                    Log("Check ticket failed",ERROR_TYPE);
-                    Send(socket,ToString(CHECK_FAILED)+Config.EndTrame);
-
                     break;
                 case CHECK_LUGGAGE :
                     {
@@ -153,7 +161,7 @@ void * ThreadFunc(int * p)
                             totalWeight += weight;
                             exceededWeight += weight > 20 ? weight - 20 : 0.0;
                         }
-                        toPay = exceededWeight * 2.5;
+                        toPay = exceededWeight * Config.ExceededPrice;
                         Send(socket,ToString(CHECK_LUGGAGE)+Config.TrameSeparator+ToString(totalWeight)+Config.TrameSeparator+ToString(exceededWeight)+Config.TrameSeparator+ToString(toPay)+Config.EndTrame);
                     }
                     break;
@@ -164,7 +172,9 @@ void * ThreadFunc(int * p)
                         int n =1;
                         for(std::vector<string>::size_type i = 1; i != tempoTokens.size(); i+=2)
                         {
+                            pthread_mutex_lock(&luggageFileMutex);
                             SaveLuggage(n,ticketNumber,tempoTokens[i+1]);
+                            pthread_mutex_unlock(&luggageFileMutex);
                             n++;
                         }
                         state = AUTHENTICATED;
@@ -180,7 +190,7 @@ void * ThreadFunc(int * p)
                     Log("Error Request type doesn't exist : "+tokens[0],ERROR_TYPE);
                     break;
             }
-        }while(message!="Stop" && message.length()!=0);
+        }while(message!="DISCONNECTED" && message.length()!=0);
         pthread_mutex_lock(&currentIndexMutex);
 		connectedSocket[treatedClient] = -1;
         pthread_mutex_unlock(&currentIndexMutex);

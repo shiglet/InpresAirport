@@ -7,5 +7,7 @@
     "loginfile" : "login.csv",
     "ticketfile" : "ticket.csv",
     "fly" : "VOL 362 POWDER-AIRLINES - Peshawar 6h30",
-    "flynumber" : "362-22082017-"
+    "flynumber" : "362-22082017-",
+    "exceededprice" : 2.5,
+    "log" : true
 }

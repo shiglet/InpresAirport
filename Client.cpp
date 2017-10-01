@@ -13,14 +13,6 @@ int main()
     ReadConfigFile();
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
-    Log("Creating socket :",INFO_TYPE);    
-    cliSocket = CreateSocket();
-
-    Log("Getting address informations",INFO_TYPE);
-    socketAddr = GetAddr(Config.Host,Config.CheckPort);
-
-    Log("Connecting to the server",INFO_TYPE);
-    Connect(socketAddr,cliSocket);
     string msg,login,pass;
     bool authenticated = false;
     int choix;
@@ -33,6 +25,17 @@ int main()
             cin>>login;
             cout<<"Mot de passe : ";
             cin>>pass;
+            if(!authenticated)
+            {
+                Log("Creating socket :",INFO_TYPE);    
+                cliSocket = CreateSocket();
+            
+                Log("Getting address informations",INFO_TYPE);
+                socketAddr = GetAddr(Config.Host,Config.CheckPort);
+            
+                Log("Connecting to the server",INFO_TYPE);
+                Connect(socketAddr,cliSocket);
+            }
             SendLogin(login,pass);
             message = Receive(cliSocket);
             if((authenticated = (message == ToString(LOGIN_SUCCESS)+Config.EndTrame)))
@@ -63,32 +66,27 @@ int main()
                 message = Receive(cliSocket);
                 if(message == ToString(CHECK_SUCCESS)+Config.EndTrame)
                 {
-                    Log("Le billet est correcte, encodage des/du baggage(s) ...",SUCCESS_TYPE);
+                    cout<<"Le billet est correcte, encodage des/du baggage(s) ..."<<endl;
+
                     TreatLuggages(atoi(passager.c_str()));
                     message = Receive(cliSocket);
                     TreatWeight(message);
                 }
                 else
                 {
-                    Log("Le check du billet a échoué",ERROR_TYPE);
+                    cout<<"Billet incorrece ou déjà checké"<<endl;
                 }
                 break;
             }
-            case 2 :
-                //Exit
-                Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
-                TreatLogout(Receive(cliSocket));
-                Log("Closing socket",INFO_TYPE);
-                Close(cliSocket);            
-                break;
         }
     }while(choix!=2);
+    Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
+    TreatLogout(Receive(cliSocket));    
 }
 
 void SendLogin(string l, string p)
 {
     string s = ToString(LOGIN_OFFICER)+Config.TrameSeparator+l+Config.TrameSeparator+p+Config.EndTrame;
-    Log("Envoie de "+s);
     Send(cliSocket,&s[0],s.length());
 }
 
@@ -103,6 +101,8 @@ void TreatLogout(string msg)
     {
         Log("Problème lors de la déconnexion : "+tokens[1]);
     }
+    Log("Closing socket",INFO_TYPE);
+    Close(cliSocket);
 }
 
 int DisplayMenu()

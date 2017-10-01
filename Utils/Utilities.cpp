@@ -3,6 +3,7 @@ Configuration Config;
 
 void Log(string log, int type)
 {
+    if(!Config.Log) return;
     switch(type)
     {
         case DEFAULT_TYPE : 
@@ -46,6 +47,8 @@ void ReadConfigFile()
     Config.TicketFile = root.get<string>("ticketfile");
     Config.Fly = root.get<string>("fly");
     Config.FlyNumber = root.get<string>("flynumber");
+    Config.ExceededPrice = root.get<float>("exceededprice");
+    Config.Log = root.get<bool>("log");
 }
 
 //Login 
@@ -84,8 +87,9 @@ bool CheckTicket(string ticketNumber, string count)
     while (getline(in,line))
     {
         vector<std::string> tokens = Tokenize(line,string() + Config.CSVSeparator);
-        if(tokens.size()<2) continue;
-        if(tokens.at(0) == ticketNumber && tokens.at(1)==count)
+        if(tokens.size()<3) continue;
+        cout<<tokens.size()<<endl;
+        if(tokens[0] == ticketNumber && tokens[1]==count && tokens[2] == "non_checked")
             return true;
     }
     return false;

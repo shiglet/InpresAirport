@@ -14,6 +14,8 @@ typedef struct
     string TicketFile;
     string Fly;
     string FlyNumber;
+    float ExceededPrice;
+    bool Log;
 } Configuration;
 extern Configuration Config;
 //Log
