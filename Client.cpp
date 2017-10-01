@@ -46,6 +46,7 @@ int main()
                 break;
             }
             Log("La combinaison de login/password est incorrecte !",ERROR_TYPE);
+            Close(cliSocket);
         }
         choix = DisplayMenu();
         switch(choix)
