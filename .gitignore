@@ -9,9 +9,8 @@
 !*/
 
 # Ignore `bin` dir
-bin/
-# or
-*/bin/*
+bin/*.o
+
 
 # Debug files
 *.dSYM/
