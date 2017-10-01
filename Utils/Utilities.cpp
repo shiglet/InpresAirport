@@ -67,8 +67,12 @@ bool CheckLogin(string login, string password)
         vector<std::string> tokens = Tokenize(line,string() + Config.CSVSeparator);
         if(tokens.size()<2) continue;
         if(tokens.at(0) == login && tokens.at(1)==password)
+        {
+            in.close();
             return true;
+        }
     }
+    in.close();
     return false;
 }
 
@@ -88,10 +92,16 @@ bool CheckTicket(string ticketNumber, string count)
     {
         vector<std::string> tokens = Tokenize(line,string() + Config.CSVSeparator);
         if(tokens.size()<3) continue;
-        cout<<tokens.size()<<endl;
         if(tokens[0] == ticketNumber && tokens[1]==count && tokens[2] == "non_checked")
+        {
+            in.close();
+            string toReplace = ticketNumber+Config.CSVSeparator+count+Config.CSVSeparator+"non_checked";
+            string by = ticketNumber+Config.CSVSeparator+count+Config.CSVSeparator+"checked";
+            ReplaceInFile(Config.TicketFile,toReplace,by);
             return true;
+        }
     }
+    in.close();
     return false;
 }
 
@@ -113,6 +123,22 @@ void SaveLuggage(int n ,string ticketNumber,string valise)
     file<<ticketNumber<<"-"<<setfill('0')<<setw(3)<<n<<Config.CSVSeparator;
     valise == "O" ? file<<"VALISE"<<endl : file<<"PASVALISE"<<endl;
     file.close();
+}
+
+void ReplaceInFile(string fileName, string toReplace, string byReplace)
+{
+    ostringstream oss;
+    ifstream in_file(fileName.c_str());
+
+    oss << in_file.rdbuf();
+    string str = oss.str();
+    size_t pos = str.find(toReplace);
+    str.replace(pos, toReplace.length(), byReplace);
+    in_file.close();
+
+    ofstream out_file(fileName.c_str());
+    out_file << str;
+    out_file.close();
 }
 
 template string ToString<int>(int);

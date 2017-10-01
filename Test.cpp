@@ -14,9 +14,6 @@ int DisplayMenu();
 int main()
 {
     ReadConfigFile();
-    SaveLuggage(1,Config.FlyNumber+ToString(100),"O");
-    SaveLuggage(2,Config.FlyNumber+ToString(100),"O");
-    SaveLuggage(3,Config.FlyNumber+ToString(100),"N");
-    SaveLuggage(15,Config.FlyNumber+ToString(100),"O");
+    CheckTicket("362-22082017-100","2");
     return 0;
 }

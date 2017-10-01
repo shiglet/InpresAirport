@@ -34,11 +34,10 @@ template<typename T>
 string ToString(T);
 vector<string> Tokenize(string message, string key = string()+Config.TrameSeparator+Config.EndTrame);
 
-//Ticket
+//Files
 bool CheckTicket(string,string);
-//Login
 bool CheckLogin(string,string);
-
+void ReplaceInFile(string,string ,string);
 //Luggages
 void SaveLuggage(int,string,string);
 #endif
