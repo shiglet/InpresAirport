@@ -84,7 +84,7 @@ void * ThreadFunc(int * p)
     vector<string> tempoTokens;
     int treatedClient,socket;
     int state = NON_AUTHENTICATED;
-
+    vector<string> vMessage;
     while(1)
 	{
         pthread_mutex_lock(&currentIndexMutex);
@@ -114,22 +114,22 @@ void * ThreadFunc(int * p)
                     {
                         Log("Logging success",SUCCESS_TYPE);
                         state = AUTHENTICATED;
-                        Send(socket,ToString(LOGIN_SUCCESS)+Config.EndTrame);
+                        Send(socket,CreateMessage(LOGIN_SUCCESS));
                         break;
                     }
                     Log("Logging failed",ERROR_TYPE);
-                    Send(socket,ToString(LOGIN_FAILED)+Config.EndTrame);
+                    Send(socket,CreateMessage(LOGIN_FAILED));
                     break;
                 case LOGOUT_REQUEST : 
                     if(state == NON_AUTHENTICATED) 
                     {
                         Log("User is not authenticated, disconnection failed...",ERROR_TYPE);
-                        Send(socket,ToString(LOGOUT_FAILED) + Config.EndTrame);
+                        Send(socket,CreateMessage(LOGOUT_FAILED));
                         break;
                     }
                     Log("Succcessfully disconnected",SUCCESS_TYPE);
                     state = NON_AUTHENTICATED;
-                    Send(socket,ToString(LOGOUT_SUCCESS) + Config.EndTrame);
+                    Send(socket,CreateMessage(LOGOUT_SUCCESS));
                     message = "DISCONNECTED";
                     break;
                 case CHECK_TICKET : 
@@ -143,11 +143,11 @@ void * ThreadFunc(int * p)
                             ticketNumber = tokens[1];
                             Log("Check ticket success",SUCCESS_TYPE);
                             state = CHECKING;
-                            Send(socket,ToString(CHECK_SUCCESS)+Config.EndTrame);
+                            Send(socket,CreateMessage(CHECK_SUCCESS));
                             break;
                         }
                         Log("Check ticket failed",ERROR_TYPE);
-                        Send(socket,ToString(CHECK_FAILED)+Config.EndTrame);
+                        Send(socket,CreateMessage(CHECK_FAILED));
                     }
                     break;
                 case CHECK_LUGGAGE :
@@ -162,7 +162,8 @@ void * ThreadFunc(int * p)
                             exceededWeight += weight > 20 ? weight - 20 : 0.0;
                         }
                         toPay = exceededWeight * Config.ExceededPrice;
-                        Send(socket,ToString(CHECK_LUGGAGE)+Config.TrameSeparator+ToString(totalWeight)+Config.TrameSeparator+ToString(exceededWeight)+Config.TrameSeparator+ToString(toPay)+Config.EndTrame);
+                        vMessage = {ToString(totalWeight),ToString(exceededWeight),ToString(toPay)};
+                        Send(socket,CreateMessage(CHECK_LUGGAGE,vMessage));
                     }
                     break;
                 case PAYMENT_DONE : 

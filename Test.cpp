@@ -9,11 +9,13 @@
 #include <boost/algorithm/string/classification.hpp> // Include boost::for is_any_of
 #include <boost/algorithm/string/split.hpp> // Include for boost::split
 #include "Utils/Utilities.h"
+#include "Protocol/CIMP.h"
 using namespace std;
 int DisplayMenu();
 int main()
 {
     ReadConfigFile();
-    CheckTicket("362-22082017-100","2");
+    vector<string> msg;
+    cout<<CreateMessage(LOGIN_OFFICER,msg);
     return 0;
 }

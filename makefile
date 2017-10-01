@@ -5,7 +5,7 @@ B = bin/
 EXEC = Client Server Test
 U = Utils/
 NET = Network/
-C = g++ -g
+C = g++ -g -std=c++11
 all : $(EXEC)
 
 Client: Client.cpp $(OBJ)

@@ -140,6 +140,14 @@ void ReplaceInFile(string fileName, string toReplace, string byReplace)
     out_file << str;
     out_file.close();
 }
-
+string CreateMessage(int type,vector<string> msg)
+{
+    string message = ToString(type);
+    for(std::vector<string>::size_type i = 0; i != msg.size(); i++)
+    {
+        message+= Config.TrameSeparator + msg[i];
+    }
+    return message+=Config.EndTrame;
+}
 template string ToString<int>(int);
 template string ToString<float>(float);

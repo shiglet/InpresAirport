@@ -14,6 +14,8 @@ int main()
     struct sockaddr_in socketAddr;
     Log("Server Checkin InpresAirport",INFO_TYPE);
     string msg,login,pass;
+    vector<string> vMessage;
+
     bool authenticated = false;
     int choix;
     do
@@ -51,7 +53,7 @@ int main()
             case 0 :
             //Disconnect 
                 authenticated = false;
-                Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
+                Send(cliSocket,CreateMessage(LOGOUT_REQUEST));
                 TreatLogout(Receive(cliSocket));
                 break;
             case 1 :
@@ -62,7 +64,8 @@ int main()
                 ticketNumber = Config.FlyNumber + ticketNumber;
                 cout<<"Nombre d'accompagnants ?";
                 cin>>passager;
-                Send(cliSocket,ToString(CHECK_TICKET)+Config.TrameSeparator+ticketNumber+Config.TrameSeparator+passager+Config.EndTrame);
+                vMessage = {ticketNumber,passager};
+                Send(cliSocket,CreateMessage(CHECK_TICKET,vMessage));
                 message = Receive(cliSocket);
                 if(message == ToString(CHECK_SUCCESS)+Config.EndTrame)
                 {
@@ -80,14 +83,14 @@ int main()
             }
         }
     }while(choix!=2);
-    Send(cliSocket,ToString(LOGOUT_REQUEST)+Config.EndTrame);
+    Send(cliSocket,CreateMessage(LOGOUT_REQUEST));
     TreatLogout(Receive(cliSocket));    
 }
 
 void SendLogin(string l, string p)
 {
-    string s = ToString(LOGIN_OFFICER)+Config.TrameSeparator+l+Config.TrameSeparator+p+Config.EndTrame;
-    Send(cliSocket,&s[0],s.length());
+    vector<string> vMessage{l,p};
+    Send(cliSocket,CreateMessage(LOGIN_OFFICER,vMessage));
 }
 
 void TreatLogout(string msg)
@@ -124,18 +127,18 @@ int DisplayMenu()
 }
 void TreatLuggages(int passager)
 {
-    string poids,valise,msg;
-    msg+=ToString(CHECK_LUGGAGE);
+    vector<string> vMessage;
+    string poids,valise;
     for(int i=0;i<passager;i++)
     {
         cout<<"Poids du baggages n°"+ToString(i+1)+" : ";
         cin>>poids;
+        vMessage.push_back(poids);
         cout<<"Valise ? : ";
         cin>>valise;
-        msg+= Config.TrameSeparator+poids+Config.TrameSeparator+valise;
+        vMessage.push_back(valise);
     }
-    msg+= Config.EndTrame;
-    Send(cliSocket, msg);
+    Send(cliSocket, CreateMessage(CHECK_LUGGAGE,vMessage));
 }
 void TreatWeight(string message)
 {
@@ -151,11 +154,11 @@ void TreatWeight(string message)
     if(pay=="Y")
     {
         Log("Payement effectué avec succés",SUCCESS_TYPE);
-        Send(cliSocket,ToString(PAYMENT_DONE)+Config.EndTrame);
+        Send(cliSocket,CreateMessage(PAYMENT_DONE));
     }
     else if(pay=="N")
     {
         Log("Payement annulé",ERROR_TYPE);
-        Send(cliSocket,ToString(PAYMENT_CANCELED)+Config.EndTrame);
+        Send(cliSocket,CreateMessage(PAYMENT_CANCELED));
     }
 }
