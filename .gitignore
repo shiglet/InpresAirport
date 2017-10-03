@@ -42,6 +42,7 @@ dkms.conf
 
 # Package Files #
 *.jar
+!Resources/*.jar
 *.war
 *.ear
 *.zip
