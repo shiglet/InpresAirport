@@ -15,45 +15,31 @@ import java.util.logging.Logger;
  * @author Sadik
  */
 public class BeanBDAccess implements Serializable {
-    
-    public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
     private ResultSet rs;
     private String type;
     private String urlDB;
-    private String sampleProperty;
     private String user;
     private String password;
     private Connection con;
-    private PropertyChangeSupport propertySupport;
     
-    public BeanBDAccess() {
-        propertySupport = new PropertyChangeSupport(this);
+    public void Close()
+    {
+        try
+        {
+        if(con != null) con.close();
+        }
+        catch (SQLException ex) {
+                  System.out.println("close NOK");
+            Logger.getLogger(BeanBDAccess.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     public BeanBDAccess(String t, String u, String us , String p) {
-        propertySupport = new PropertyChangeSupport(this);
         type = t;
         user=us;
         urlDB = u;
         password = p;
     }
 
-    public String getSampleProperty() {
-        return sampleProperty;
-    }
-    
-    public void setSampleProperty(String value) {
-        String oldValue = sampleProperty;
-        sampleProperty = value;
-        propertySupport.firePropertyChange(PROP_SAMPLE_PROPERTY, oldValue, sampleProperty);
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(listener);
-    }
     public boolean connectDB()
     {
         boolean ret=true;
@@ -68,7 +54,7 @@ public class BeanBDAccess implements Serializable {
             else if(type=="ORACLE")
             {
                 Class.forName("oracle.jdbc.OracleDriver");
-                urlDB = "jdbc:oracle:thin:@localhost:1521/"+urlDB;
+                urlDB = "jdbc:oracle:thin:@localhost:1521:XE";
                 System.out.println("Driver ORACLE chargé");
             }
 
@@ -90,16 +76,16 @@ public class BeanBDAccess implements Serializable {
         }
         return ret;
     }
-    public synchronized ResultSet executeQuery(String query) throws SQLException
+    public synchronized ResultSet executeQuery(String query)
     {
         java.sql.Statement instruc = null;
         try {
             instruc = con.createStatement();
+            System.out.println("Création d'une instance d'instruction pour cette connexion");
+            rs = instruc.executeQuery(query);
         } catch (SQLException ex) {
             Logger.getLogger(BeanBDAccess.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Création d'une instance d'instruction pour cette connexion");
-        rs = instruc.executeQuery(query);
         return rs;
     }
     

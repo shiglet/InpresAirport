@@ -24,19 +24,26 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
      * Creates new form AccessBD
      */
     private String choix;
+    private boolean isMysql = true;
     private BeanBDAccess bd;
     public APPLICATION_TEST_JDBC() {
         initComponents();
-        String tchoix[] ={"Mysql bd societe","BD journal de bord (Oracle)"};
+        String tchoix[] ={"Mysql - bd airport","Oracle BD_JOURNALDEBORD"};
         choix = (String) JOptionPane.showInputDialog(this, "Choix de la BD","Choix BD",JOptionPane.QUESTION_MESSAGE,null,tchoix,tchoix[0]);
         if(choix==null)
             System.exit(0);
-        if(choix == "Mysql bd societe")
+        if(choix == "Mysql - bd airport")
         {
             bd = new BeanBDAccess("MYSQL","bd_airport","root","sadikano");
         }
         else
-            bd = new BeanBDAccess("ORACLE","orcl","root","sadikano");
+        {
+            bd = new BeanBDAccess("ORACLE","shirro","shirro","sadikano");
+            tableCMB.removeAllItems();
+            tableCMB.addItem("Activites");
+            tableCMB.addItem("Intervenants");            
+            isMysql= false;
+        }
         bd.connectDB();
     }
 
@@ -54,8 +61,16 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         resultatJT = new javax.swing.JTable();
         executeJB = new javax.swing.JButton();
+        tableCMB = new javax.swing.JComboBox<>();
+        CountCB = new javax.swing.JCheckBox();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setText("Requête SQL : ");
 
@@ -79,6 +94,18 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
             }
         });
 
+        tableCMB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Vols", "Billets", "Passager", "Bagages", "Avion", "Agents" }));
+
+        CountCB.setSelected(true);
+        CountCB.setText("Count");
+
+        jButton1.setText("Executer");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -92,30 +119,61 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(requeteTF, javax.swing.GroupLayout.PREFERRED_SIZE, 413, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
-                        .addComponent(executeJB)))
+                        .addComponent(executeJB))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tableCMB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(CountCB)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(requeteTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addComponent(executeJB))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tableCMB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(CountCB)
+                    .addComponent(jButton1)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void executeJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeJBActionPerformed
+        executeRequest(requeteTF.getText());
+    }//GEN-LAST:event_executeJBActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        String request = "select";
+        String table = (String)tableCMB.getSelectedItem();
+        if(CountCB.isSelected()) request+=" count(*) as Nombre";
+        else request+=" *";
+        request+=" from "+table;
+        executeRequest(request);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        bd.Close();
+    }//GEN-LAST:event_formWindowClosing
+
+    private void executeRequest(String request)
+    {
         try 
         {
+            
             String delimiter = " ";
-            String[] TypeRequete = requeteTF.getText().split(delimiter);
+            String[] TypeRequete = request.split(delimiter);
             System.out.println("Type de requête : " + TypeRequete[0]);
             int positiontable = 0;
             if(TypeRequete[0].toString().toUpperCase().equals("SELECT"))
@@ -129,9 +187,11 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
                     }
                 }
                 String NameOfTable = TypeRequete[positiontable].substring(0,TypeRequete[positiontable].length());
-                bd.executeQuery("LOCK TABLE " + NameOfTable + " WRITE" + ";");
-                ResultSet rs = bd.executeQuery(requeteTF.getText());
-                bd.executeQuery("UNLOCK TABLE");
+                String lock = isMysql ? "LOCK TABLE " + NameOfTable + " WRITE":"SET TRANSACTION READ ONLY";
+                String unlock = isMysql ? "UNLOCK TABLE":"commit"; 
+                bd.executeQuery(lock);
+                ResultSet rs = bd.executeQuery(request);
+                bd.executeQuery(unlock);
                 int columns = rs.getMetaData().getColumnCount();
                 Vector<String> columnNames = new Vector<String>();
                 for (int i = 1; i <= columns; i++)
@@ -153,19 +213,21 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
             {
                 if(TypeRequete[0].toUpperCase().equals("UPDATE") == true )
                 {
-                    bd.executeQuery("LOCK TABLE " + TypeRequete[1] + " WRITE" + ";");
-                    bd.insertQuery(requeteTF.getText());
-                    bd.executeQuery("UNLOCK TABLE;");
+                    String lock = isMysql ? "LOCK TABLE " + TypeRequete[1] + " WRITE":"SET TRANSACTION READ WRITE";
+                    String unlock = isMysql ? "UNLOCK TABLE":"commit"; 
+                    bd.executeQuery(lock);
+                    bd.insertQuery(request);
+                    bd.executeQuery(unlock);
                     int position = 0;
                     JOptionPane jop = new JOptionPane();
                     int option = jop.showConfirmDialog(null, "Voulez-vous afficher le contenu de la table: " + TypeRequete[position] + " ?", "QUESTION", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if(option == JOptionPane.YES_OPTION)
                     {
                         ResultSet rs = null;
-                        String Query = "SELECT * FROM " +TypeRequete[1] + ";";
-                        bd.executeQuery("LOCK TABLE " + TypeRequete[1] + " WRITE" + ";");
+                        String Query = "SELECT * FROM " +TypeRequete[1] + "";
+                        bd.executeQuery(lock);
                         rs = bd.executeQuery(Query);
-                        bd.executeQuery("UNLOCK TABLE;");
+                        bd.executeQuery(unlock);
                         int columns = rs.getMetaData().getColumnCount();
                         Vector<String> columnNames = new Vector<String>();
                         for (int i = 1; i <= columns; i++)
@@ -186,19 +248,21 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
                 }
                 else if(TypeRequete[0].toUpperCase().equals("INSERT")  || TypeRequete[0].toUpperCase().equals("DELETE") == true)
                 {
-                    bd.executeQuery("LOCK TABLE " + TypeRequete[2] + " WRITE" + ";");
-                    bd.insertQuery(requeteTF.getText());
-                    bd.executeQuery("UNLOCK TABLE;");
+                    String lock = isMysql ? "LOCK TABLE " + TypeRequete[2] + " WRITE":"SET TRANSACTION READ WRITE";
+                    String unlock = isMysql ? "UNLOCK TABLE":"commit"; 
+                    bd.executeQuery(lock);
+                    bd.insertQuery(request);
+                    bd.executeQuery(unlock);
                     int position = 0;
                     JOptionPane jop = new JOptionPane();
                     int option = jop.showConfirmDialog(null, "Voulez-vous afficher le contenu de la table: " + TypeRequete[position] + " ?", "QUESTION", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if(option == JOptionPane.YES_OPTION)
                     {
                         ResultSet rs = null;
-                        String Query = "SELECT * FROM " +TypeRequete[2] + ";";
-                        bd.executeQuery("LOCK TABLE " + TypeRequete[2] + " WRITE" + ";");
+                        String Query = "SELECT * FROM " +TypeRequete[2] + "";
+                        bd.executeQuery(lock);
                         rs = bd.executeQuery(Query);
-                        bd.executeQuery("UNLOCK TABLE;");
+                        bd.executeQuery(unlock);
                         int columns = rs.getMetaData().getColumnCount();
                         Vector<String> columnNames = new Vector<String>();
                         for (int i = 1; i <= columns; i++)
@@ -225,8 +289,7 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
         {
             Logger.getLogger(APPLICATION_TEST_JDBC.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_executeJBActionPerformed
-
+    }
     /**
      * @param args the command line arguments
      */
@@ -264,10 +327,13 @@ public class APPLICATION_TEST_JDBC extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox CountCB;
     private javax.swing.JButton executeJB;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField requeteTF;
     private javax.swing.JTable resultatJT;
+    private javax.swing.JComboBox<String> tableCMB;
     // End of variables declaration//GEN-END:variables
 }
