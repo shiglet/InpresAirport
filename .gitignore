@@ -101,3 +101,4 @@ nbdist/
 *.app
 *.i*86
 *.x86_64
+/Eval4/nbproject/private/
