@@ -102,3 +102,5 @@ nbdist/
 *.i*86
 *.x86_64
 /Eval4/nbproject/private/
+/Eval3 Client/nbproject/private/
+/Configuration/nbproject/private/
