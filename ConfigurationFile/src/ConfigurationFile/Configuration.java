@@ -1,3 +1,5 @@
+package ConfigurationFile;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,8 @@ public class Configuration
     {
         try 
         {
+            File f = new File(".");
+            System.out.println(f.getAbsoluteFile());
             properties.load(new FileInputStream(".."+ File.separator +"Resources"+File.separator+"Configuration.properties"));
         } 
         catch (FileNotFoundException ex) 
@@ -52,6 +56,6 @@ public class Configuration
     }
     public String getPropertie(String propertieName)
     {
-        return properties.getProperty(propertieName);
+        return properties.getProperty(propertieName.toUpperCase());
     }
 }

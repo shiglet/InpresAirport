@@ -5,7 +5,12 @@
  */
 package clientgui;
 
+import ConfigurationFile.Configuration;
+import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import request.LUGAPRequest;
 
 /**
  *
@@ -17,17 +22,30 @@ public class Luggages_App extends javax.swing.JFrame {
      * Creates new form Luggages_App
      */
     private Socket socket;
+    private Configuration configuration;
+    private String trameSep;
     public Luggages_App() {
         initComponents();
+        configuration = new Configuration();
+        trameSep = configuration.getPropertie("TRAME_SEPARATOR");
         login();
     }
     private void login()
     {
         boolean authenticated = false;
+        Connexion con = new Connexion(this,true);
+        String login, password;
+        try {
+            socket = new Socket("0.0.0.0",32011);
+        } catch (IOException ex) {
+            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+        }
         while(!authenticated)
         {
-            Connexion con = new Connexion(this,true);
             con.setVisible(true);
+            login = con.getLogin();
+            password = con.getPassword();
+            LUGAPRequest req = new LUGAPRequest(LUGAPRequest.REQUEST_LOGIN,login+trameSep+password);
             
         }
     }

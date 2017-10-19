@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package protocolLUGAP;
+package response;
+import interfaces.Response;
 
-import messageinterface.Response;
 
 /**
  *

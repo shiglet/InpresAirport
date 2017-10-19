@@ -14,8 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import messageinterface.Request;
-import utils.ServerConsole;
+import interfaces.Request;
+import interfaces.ServerConsole;
 import utils.TasksSource;
 /**
  *

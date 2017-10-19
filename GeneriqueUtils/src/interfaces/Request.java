@@ -3,10 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package messageinterface;
+package interfaces;
 
 import java.net.Socket;
-import utils.ServerConsole;
 
 /**
  *

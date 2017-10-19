@@ -5,13 +5,15 @@
  */
 package serveur;
 
+import ConfigurationFile.Configuration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
-import utils.ServerConsole;
+
 import utils.TasksList;
 import utils.TasksSource;
-
+import ConfigurationFile.*;
+import interfaces.ServerConsole;
 /**
  *
  * @author Sadik
@@ -21,6 +23,7 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
     /**
      * Creates new form LuggageServer
      */
+    private Configuration configuration = new Configuration();
     public LuggageServer() {
         initComponents();
     }
@@ -102,7 +105,7 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
     }// </editor-fold>//GEN-END:initComponents
 
     private void startJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startJBActionPerformed
-        ServerLuggageThread serverLuggage = new ServerLuggageThread(20000, this, new TasksList());
+        ServerLuggageThread serverLuggage = new ServerLuggageThread(Integer.parseInt(configuration.getPropertie("PORT_BAGGAGES")), this, new TasksList());
         serverLuggage.start();
     }//GEN-LAST:event_startJBActionPerformed
 
