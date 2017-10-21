@@ -5,6 +5,7 @@
  */
 package serveur;
 
+import database.utilities.BeanBDAccess;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -32,13 +33,15 @@ public class ServerLuggageThread extends Thread
     private int nbrClient;
     private boolean fin;
     private int waitingTasks;
-    public ServerLuggageThread(int p,ServerConsole sc, TasksSource ts)
+    private BeanBDAccess bd; 
+    public ServerLuggageThread(int p,ServerConsole sc, TasksSource ts, BeanBDAccess b)
     {
         port = p; 
         app = sc;
         nbrClient = 3;
         waitingTasks = 0;
         tasks = ts;
+        bd = b;
     }
     
     public void run()
@@ -92,7 +95,7 @@ public class ServerLuggageThread extends Thread
             {
                 System.err.println("Erreur ? [" + e.getMessage() + "]");
             }
-            Runnable travail = req.createRunnable(CSocket, app);
+            Runnable travail = req.createRunnable(CSocket, app,oos,ois,bd);
             if (travail != null)
             {
                 tasks.recordTache(travail);

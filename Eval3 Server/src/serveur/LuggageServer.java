@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import utils.TasksList;
 import utils.TasksSource;
 import ConfigurationFile.*;
+import database.utilities.BeanBDAccess;
 import interfaces.ServerConsole;
 /**
  *
@@ -23,6 +24,7 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
     /**
      * Creates new form LuggageServer
      */
+    private BeanBDAccess bd;
     private Configuration configuration = new Configuration();
     public LuggageServer() {
         initComponents();
@@ -105,7 +107,10 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
     }// </editor-fold>//GEN-END:initComponents
 
     private void startJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startJBActionPerformed
-        ServerLuggageThread serverLuggage = new ServerLuggageThread(Integer.parseInt(configuration.getPropertie("PORT_BAGGAGES")), this, new TasksList());
+        bd = new BeanBDAccess("MYSQL","bd_airport","root","sadikano");
+        bd.connectDB();
+        trace("server#BeandBDAccess initialisé");
+        ServerLuggageThread serverLuggage = new ServerLuggageThread(Integer.parseInt(configuration.getPropertie("PORT_BAGGAGES")), this, new TasksList(),bd);
         serverLuggage.start();
     }//GEN-LAST:event_startJBActionPerformed
 

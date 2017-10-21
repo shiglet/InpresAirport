@@ -5,6 +5,9 @@
  */
 package interfaces;
 
+import database.utilities.BeanBDAccess;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -13,5 +16,5 @@ import java.net.Socket;
  */
 public interface Request 
 {
-    public Runnable createRunnable (Socket s,ServerConsole cs);
+    public Runnable createRunnable (Socket s,ServerConsole cs,ObjectOutputStream oos, ObjectInputStream ois,BeanBDAccess beanBD);
 }

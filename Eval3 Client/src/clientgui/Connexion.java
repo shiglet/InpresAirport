@@ -127,7 +127,7 @@ public class Connexion extends javax.swing.JDialog {
     
     public String getPassword()
     {
-        return jPasswordFieldPassword.getPassword().toString();
+        return new String(jPasswordFieldPassword.getPassword());
     }
     
     public String getLogin()
