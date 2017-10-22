@@ -22,6 +22,10 @@ public class TableItemModel extends AbstractTableModel
         vLuggages = v;
         columNames = new String[] {"Identifiant","Poids","Type","Receptionné (O/N)","Chargé en soute (O/N)","Vérifié par la douane (O/N)","Remarques"};
     }
+    public LuggageModel getLuggageAt(int i)
+    {
+        return vLuggages.elementAt(i);
+    }
     @Override
     public int getColumnCount() 
     { 
@@ -84,6 +88,18 @@ public class TableItemModel extends AbstractTableModel
        if(column <3)
            return false;
        return true;
+    }
+    
+    public boolean canClose()
+    {
+        for(LuggageModel l : vLuggages)
+        {
+            if(!(l.getCharge().equals("O")) && !(l.getCharge().equals("R")))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

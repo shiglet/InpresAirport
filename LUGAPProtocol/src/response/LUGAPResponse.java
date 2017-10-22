@@ -21,6 +21,10 @@ public class LUGAPResponse implements Response,Serializable{
     public static final short LOGIN_SUCCESS = 1;
     public static final short FLYLIST_SUCCESS = 3;
     public static final short LUGGAGE_SUCCESS = 4;
+    public static final short UPDATE_SUCCESS = 5;
+    public static final short UPDATE_FAILED = 6;
+    public static final short LOGOUT_SUCCESS = 7;
+    public static final short LOGOUT_FAILED = 8;
     public String message;
     public Vector<String> vData;
     private Vector<LuggageModel> vLuggages;

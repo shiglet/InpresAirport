@@ -6,6 +6,7 @@
 package clientgui;
 
 import java.util.Vector;
+import javax.swing.JFrame;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import models.LuggageModel;
@@ -20,18 +21,12 @@ public class Bagages extends javax.swing.JDialog {
     /**
      * Creates new form Bagages
      */
+    Luggages_App parent;
     public Bagages(java.awt.Frame parent, boolean modal,Vector<LuggageModel> vData) {
         super(parent, modal);
+        this.parent = (Luggages_App) parent;
         initComponents();
-        TableItemModel tableItemModel = new TableItemModel(vData);
-        tableItemModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) 
-            {
-                ((Luggages_App)parent).tableChanged(e);
-            }
-        });
-        jTable1.setModel(tableItemModel);   
+        initJTable(vData);
     }
 
     /**
@@ -46,7 +41,12 @@ public class Bagages extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -75,8 +75,28 @@ public class Bagages extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        TableItemModel tim = (TableItemModel) jTable1.getModel();
+        if(tim.canClose())
+            this.dispose();
+    }//GEN-LAST:event_formWindowClosing
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     // End of variables declaration//GEN-END:variables
+
+    public void initJTable(Vector<LuggageModel> vData) 
+    {
+        TableItemModel tableItemModel = new TableItemModel(vData);
+        tableItemModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) 
+            {
+                parent.tableChanged(e);
+            }
+        });
+        jTable1.setModel(tableItemModel);   
+    }
 }

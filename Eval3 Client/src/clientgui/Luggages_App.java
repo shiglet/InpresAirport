@@ -6,6 +6,9 @@
 package clientgui;
 
 import ConfigurationFile.Configuration;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.event.TableModelEvent;
 import models.LuggageModel;
+import models.TableItemModel;
 import request.LUGAPRequest;
 import response.LUGAPResponse;
 
@@ -43,6 +47,7 @@ public class Luggages_App extends javax.swing.JFrame {
     private int port;
     private ObjectOutputStream oos ;
     private ObjectInputStream ois ;
+    private Bagages  b ;
     public Luggages_App() {
         initComponents();
         configuration = new Configuration();
@@ -55,7 +60,26 @@ public class Luggages_App extends javax.swing.JFrame {
     
     public void tableChanged(TableModelEvent e) 
     {
-        System.out.println(e);
+        System.out.println("Change");
+        TableItemModel tim = (TableItemModel) e.getSource();
+        LuggageModel l = tim.getLuggageAt(e.getLastRow());
+        LUGAPRequest req = new LUGAPRequest(LUGAPRequest.UPDATE_LUGGAGE,l);
+        try 
+        {
+            oos.reset();//cause of sending always the same object reference
+            oos.writeObject(req);
+            LUGAPResponse rep = (LUGAPResponse) ois.readObject();
+            b.initJTable(rep.getvLuggages());
+        } 
+        catch (IOException | ClassNotFoundException ex) 
+        {
+            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    public void exit()
+    {
+        System.exit(0);
     }
     private void login()
     {
@@ -68,7 +92,9 @@ public class Luggages_App extends javax.swing.JFrame {
             
             while(!authenticated)
             {
-                con.setVisible(true);   
+                con.setVisible(true);
+                if(!con.isDisplayable()) //if disposed (cross click)
+                    System.exit(0);
                 login = con.getLogin();
                 password = con.getPassword();
                 System.out.println(password);
@@ -145,6 +171,11 @@ public class Luggages_App extends javax.swing.JFrame {
         jScrollPane2.setViewportView(jEditorPane1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setText("Application baggages");
 
@@ -204,15 +235,39 @@ public class Luggages_App extends javax.swing.JFrame {
             oos.writeObject(req);
             LUGAPResponse rep = (LUGAPResponse) ois.readObject();
             Vector<LuggageModel> vLuggage = rep.getvLuggages();
-            System.out.println(vLuggage.size());
-            Bagages  b = new Bagages(this,true,vLuggage);
+            b = new Bagages(this,true,vLuggage);
             b.setVisible(true);
+            logout();
+            login();
         } 
         catch (IOException | ClassNotFoundException ex) 
         {
             Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_flyJLMouseClicked
+    private void logout() {
+        if(socket==null || socket.isClosed())
+                return;
+        try
+        {
+            oos.writeObject(new LUGAPRequest(LUGAPRequest.REQUEST_LOGOUT));
+            LUGAPResponse rep = (LUGAPResponse) ois.readObject();
+            if(rep.getCode() == LUGAPResponse.LOGOUT_SUCCESS)
+                System.out.println("Deconnexion réussie !");
+            oos.close();
+            ois.close();
+            socket.close();
+        } 
+        catch (IOException ex) 
+        {
+            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        logout();
+    }//GEN-LAST:event_formWindowClosing
     
     public byte[] buildDigest(long time,double r,String password,String login)
     {
@@ -278,5 +333,7 @@ public class Luggages_App extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
+
+    
 
 }

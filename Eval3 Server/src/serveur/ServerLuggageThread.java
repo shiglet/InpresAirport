@@ -5,6 +5,7 @@
  */
 package serveur;
 
+import ConfigurationFile.Configuration;
 import database.utilities.BeanBDAccess;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -34,11 +35,13 @@ public class ServerLuggageThread extends Thread
     private boolean fin;
     private int waitingTasks;
     private BeanBDAccess bd; 
+    private Configuration configuration;
     public ServerLuggageThread(int p,ServerConsole sc, TasksSource ts, BeanBDAccess b)
     {
         port = p; 
         app = sc;
-        nbrClient = 3;
+        configuration = new Configuration();
+        nbrClient = Integer.parseInt((configuration.getPropertie("POOL_NUMBER")));
         waitingTasks = 0;
         tasks = ts;
         bd = b;

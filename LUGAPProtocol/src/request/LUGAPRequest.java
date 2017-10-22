@@ -37,6 +37,8 @@ public class LUGAPRequest implements Request, Serializable{
     public static final short REQUEST_LOGOUT = 2;
     public static final short REQUEST_FLYLIST = 3;
     public static final short REQUEST_LUGGAGES = 4;
+    public static final short UPDATE_LUGGAGE = 5;
+    public LuggageModel luggage;
     private byte[] bytes;
     private short type;
     private String data;
@@ -55,6 +57,11 @@ public class LUGAPRequest implements Request, Serializable{
     {
         type = t;
     }
+    public LUGAPRequest(short t,LuggageModel l)
+    {
+        type = t;
+        luggage = l;
+    }
 
     private LUGAPRequest() {
         }
@@ -62,6 +69,7 @@ public class LUGAPRequest implements Request, Serializable{
     @Override
     public Runnable createRunnable(Socket s, ServerConsole cs,ObjectOutputStream oos, ObjectInputStream ois,BeanBDAccess beanBD) {
         return new Runnable() {
+            private String state = "NON_AUTHENTICATED";
             private BeanBDAccess bd;
             private LUGAPResponse rep;
             private LUGAPRequest req = new LUGAPRequest();
@@ -89,10 +97,13 @@ public class LUGAPRequest implements Request, Serializable{
                         case REQUEST_LUGGAGES :
                             getLuggages(req.data);
                             break;
+                        case UPDATE_LUGGAGE:
+                            updateLuggage();
+                            break;
                         case REQUEST_LOGOUT : 
                             disconnected = true;
                             treatLogout();
-                            break;
+                            continue;
                     }
                     
                     try 
@@ -102,16 +113,37 @@ public class LUGAPRequest implements Request, Serializable{
                         rep= null;
                         req = (LUGAPRequest) ois.readObject();
                     } 
-                    catch (IOException | ClassNotFoundException ex) 
+                    catch (ClassNotFoundException ex) 
                     {
                         Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
                         disconnected = true;
+                    } 
+                    catch (IOException ex) 
+                    {
+                        System.out.println("Client socket closed");
+                        disconnected = true;
                     }
                 }
+                try 
+                {
+                    oos.close();
+                    ois.close();
+                    s.close();
+                } 
+                catch (IOException ex) 
+                {
+                    Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                cs.trace("server#fin runnable");
             }
 
             private void treatLogin() 
             {
+                if(state == "AUTHENTICATED")
+                {
+                    rep = new LUGAPResponse(LUGAPResponse.LOGIN_FAILED,"Déjà authentifié");
+                    return;
+                }
                 String[] tokens = data.split(sep);
                 if(tokens.length < 3)
                 {
@@ -136,6 +168,7 @@ public class LUGAPRequest implements Request, Serializable{
                         if(MessageDigest.isEqual(msgD, req.bytes))
                         {
                             cs.trace("server#"+tokens[0]+" login ok");
+                            state = "AUTHENTICATED";
                             rep = new LUGAPResponse(LUGAPResponse.LOGIN_SUCCESS,"Connexion réussie avec succès");
                         }
                         else
@@ -182,11 +215,30 @@ public class LUGAPRequest implements Request, Serializable{
 
             private void treatLogout() 
             {
-                
+                try 
+                {
+                    if(state == "NON_AUTHENTICATED")
+                    {
+                        rep = new LUGAPResponse(LUGAPResponse.LOGOUT_FAILED,"Vous n'êtes pas authentifié");
+                        oos.writeObject(new LUGAPResponse(LUGAPResponse.LOGOUT_SUCCESS));
+                        return;
+                    }
+                    oos.writeObject(new LUGAPResponse(LUGAPResponse.LOGOUT_SUCCESS));
+                    cs.trace("server#client deconnecté");
+                } 
+                catch (IOException ex) 
+                {
+                    Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
             private void getFly() 
             {
+                if(state != "AUTHENTICATED")
+                {
+                    rep = new LUGAPResponse(LUGAPResponse.LOGIN_FAILED,"Veuillez vous authentifier d'abord");
+                    return;
+                }
                 try 
                 {
                     bd.insertQuery("LOCK TABLE vols READ");
@@ -211,6 +263,11 @@ public class LUGAPRequest implements Request, Serializable{
 
             private void getLuggages(String idVol) 
             {
+                if(state != "AUTHENTICATED")
+                {
+                    rep = new LUGAPResponse(LUGAPResponse.LOGIN_FAILED,"Veuillez vous authentifier d'abord");
+                    return;
+                }
                 try 
                 {
                     bd.insertQuery("LOCK TABLES bagages READ,billets READ");
@@ -242,6 +299,49 @@ public class LUGAPRequest implements Request, Serializable{
                     Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+            }
+
+            private void updateLuggage() 
+            {
+                if(state != "AUTHENTICATED")
+                {
+                    rep = new LUGAPResponse(LUGAPResponse.LOGIN_FAILED,"Veuillez vous authentifier d'abord");
+                    return;
+                }
+                try 
+                {
+                    LuggageModel l = req.luggage;
+                    System.out.println(l.getCharge()+l.getDouane()+l.getRemarques()+l.getReceptionne());
+                    bd.insertQuery("LOCK TABLE bagages WRITE");
+                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"'where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
+                    bd.insertQuery("UNLOCK TABLE");
+                    
+                    rs = bd.executeQuery("select * from bagages where numerobillet in (select numerobillet from billets where idvol = (select idVol from billets where numeroBillet = '"+l.getNumeroBillet()+"'))");
+
+                    Vector<LuggageModel> vData = new Vector<LuggageModel>();
+                    while(rs.next())
+                    {
+                        double p;
+                        String id,r,recep,d,c,b,v;
+                        id = rs.getString("idBagages");
+                        r = rs.getString("remarques");
+                        recep = rs.getString("receptionne");
+                        d = rs.getString("douane");
+                        c = rs.getString("charge");
+                        b = rs.getString("NumeroBillet");
+                        v = rs.getString("valise");
+                        p = rs.getDouble("poids");
+                        LuggageModel luggage = new LuggageModel(id, p, v, d, r, c, b, recep);
+                        vData.add(luggage);
+                    }
+                    rep = new LUGAPResponse(LUGAPResponse.UPDATE_SUCCESS);
+                    rep.setvLuggages(vData);
+                }
+                catch (SQLException ex) 
+                {
+                    rep = new LUGAPResponse(LUGAPResponse.UPDATE_FAILED);
+                    Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             
         };

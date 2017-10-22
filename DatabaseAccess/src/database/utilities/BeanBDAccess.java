@@ -89,17 +89,9 @@ public class BeanBDAccess implements Serializable {
         return rs;
     }
     
-    public synchronized void insertQuery(String query)
+    public synchronized void insertQuery(String query) throws SQLException
     {
-      try
-      {
         java.sql.Statement instruc = con.createStatement();
         instruc.executeUpdate(query);
-        System.out.println("L'execute OK");
-      }
-      catch (SQLException ex) {
-                  System.out.println("L'execute NOK");
-            Logger.getLogger(BeanBDAccess.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 }
