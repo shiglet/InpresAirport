@@ -33,6 +33,7 @@ import response.LUGAPResponse;
  * @author Sadik
  */
 public class LUGAPRequest implements Request, Serializable{
+    private static final long serialVersionUID = -5759325886598747695L;
     public static final short REQUEST_LOGIN = 1;
     public static final short REQUEST_LOGOUT = 2;
     public static final short REQUEST_FLYLIST = 3;
