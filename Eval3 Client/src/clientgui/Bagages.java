@@ -6,9 +6,6 @@
 package clientgui;
 
 import java.util.Vector;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import models.LuggageModel;
 import models.TableItemModel;
 
@@ -16,18 +13,17 @@ import models.TableItemModel;
  *
  * @author Sadik
  */
-public class Bagages extends javax.swing.JFrame {
+public class Bagages extends javax.swing.JDialog {
 
     /**
      * Creates new form Bagages
      */
-    private Vector<LuggageModel> vLuggages;
-    public Bagages(Vector<LuggageModel> vData) 
-    {
+    public Bagages(java.awt.Frame parent, boolean modal,Vector<LuggageModel> vData) {
+        super(parent, modal);
         initComponents();
-        vLuggages = vData;
+        TableItemModel tableItemModel = new TableItemModel(vData);
+        jTable1.setModel(tableItemModel);
         
-        jTable1.setModel(new TableItemModel(vData));
     }
 
     /**
@@ -42,7 +38,7 @@ public class Bagages extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -61,13 +57,11 @@ public class Bagages extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1096, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1110, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
         );
 
         pack();

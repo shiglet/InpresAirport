@@ -198,7 +198,7 @@ public class Luggages_App extends javax.swing.JFrame {
             LUGAPResponse rep = (LUGAPResponse) ois.readObject();
             Vector<LuggageModel> vLuggage = rep.getvLuggages();
             System.out.println(vLuggage.size());
-            Bagages  b = new Bagages(vLuggage);
+            Bagages  b = new Bagages(this,true,vLuggage);
             b.setVisible(true);
         } 
         catch (IOException | ClassNotFoundException ex) 
