@@ -6,6 +6,8 @@
 package clientgui;
 
 import java.util.Vector;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import models.LuggageModel;
 import models.TableItemModel;
 
@@ -22,8 +24,14 @@ public class Bagages extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         TableItemModel tableItemModel = new TableItemModel(vData);
-        jTable1.setModel(tableItemModel);
-        
+        tableItemModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) 
+            {
+                ((Luggages_App)parent).tableChanged(e);
+            }
+        });
+        jTable1.setModel(tableItemModel);   
     }
 
     /**

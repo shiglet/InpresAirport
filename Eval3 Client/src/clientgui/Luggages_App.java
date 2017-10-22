@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import javax.swing.event.TableModelEvent;
 import models.LuggageModel;
 import request.LUGAPRequest;
 import response.LUGAPResponse;
@@ -49,6 +50,12 @@ public class Luggages_App extends javax.swing.JFrame {
         IP = configuration.getPropertie("Server_IP");
         port = Integer.parseInt(configuration.getPropertie("PORT_BAGGAGES"));
         login();
+    }
+    
+    
+    public void tableChanged(TableModelEvent e) 
+    {
+        System.out.println(e);
     }
     private void login()
     {

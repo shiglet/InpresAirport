@@ -59,6 +59,32 @@ public class TableItemModel extends AbstractTableModel
         }
         return "??";
     }
+    @Override
+    public void setValueAt(Object value,int row, int col) 
+    {
+        switch(col)
+        {
+            case 3: 
+                vLuggages.elementAt(row).setReceptionne((String) value);
+                break;
+            case 4: 
+                vLuggages.elementAt(row).setCharge((String) value);
+                break;
+            case 5: 
+                vLuggages.elementAt(row).setDouane((String) value);
+                break;
+            case 6: 
+                vLuggages.elementAt(row).setRemarques((String) value);
+                break;
+        }
+        fireTableCellUpdated(row, col);
+    }
+    @Override
+    public boolean isCellEditable(int row, int column) {
+       if(column <3)
+           return false;
+       return true;
+    }
 }
 
 
