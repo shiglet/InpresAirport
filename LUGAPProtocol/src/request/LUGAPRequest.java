@@ -33,7 +33,6 @@ import response.LUGAPResponse;
  * @author Sadik
  */
 public class LUGAPRequest implements Request, Serializable{
-    private static final long serialVersionUID = -5759325886598747695L;
     public static final short REQUEST_LOGIN = 1;
     public static final short REQUEST_LOGOUT = 2;
     public static final short REQUEST_FLYLIST = 3;
@@ -314,7 +313,7 @@ public class LUGAPRequest implements Request, Serializable{
                     LuggageModel l = req.luggage;
                     System.out.println(l.getCharge()+l.getDouane()+l.getRemarques()+l.getReceptionne());
                     bd.insertQuery("LOCK TABLE bagages WRITE");
-                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"'where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
+                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"' where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
                     bd.insertQuery("UNLOCK TABLE");
                     
                     rs = bd.executeQuery("select * from bagages where numerobillet in (select numerobillet from billets where idvol = (select idVol from billets where numeroBillet = '"+l.getNumeroBillet()+"'))");
