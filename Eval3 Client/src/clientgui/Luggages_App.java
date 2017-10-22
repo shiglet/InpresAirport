@@ -16,11 +16,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Date;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
+import models.LuggageModel;
 import request.LUGAPRequest;
 import response.LUGAPResponse;
 
@@ -181,14 +183,27 @@ public class Luggages_App extends javax.swing.JFrame {
 
     private void flyJLMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_flyJLMouseClicked
         // TODO add your handling code here:
-        if (evt.getClickCount() == 2) {
-
-            // Double-click detected
+        if (evt.getClickCount() < 2) 
+            return;
+        
+        // Double-click detected
+        try 
+        {
             int index = flyJL.locationToIndex(evt.getPoint());
             ListModel<String> dlm = flyJL.getModel();
             String fly = dlm.getElementAt(index);
-            String[] tokens = fly.split(" "); 
-            System.out.println("IDVOL = "+tokens[1]);
+            String[] tokens = fly.split(" ");
+            LUGAPRequest req = new LUGAPRequest(LUGAPRequest.REQUEST_LUGGAGES,tokens[1]);
+            oos.writeObject(req);
+            LUGAPResponse rep = (LUGAPResponse) ois.readObject();
+            Vector<LuggageModel> vLuggage = rep.getvLuggages();
+            System.out.println(vLuggage.size());
+            Bagages  b = new Bagages(vLuggage);
+            b.setVisible(true);
+        } 
+        catch (IOException | ClassNotFoundException ex) 
+        {
+            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_flyJLMouseClicked
     

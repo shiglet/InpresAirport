@@ -7,6 +7,7 @@ package response;
 import interfaces.Response;
 import java.io.Serializable;
 import java.util.Vector;
+import models.LuggageModel;
 
 
 /**
@@ -19,8 +20,18 @@ public class LUGAPResponse implements Response,Serializable{
     private final int code;
     public static final short LOGIN_SUCCESS = 1;
     public static final short FLYLIST_SUCCESS = 3;
+    public static final short LUGGAGE_SUCCESS = 4;
     public String message;
     public Vector<String> vData;
+    private Vector<LuggageModel> vLuggages;
+
+    public Vector<LuggageModel> getvLuggages() {
+        return vLuggages;
+    }
+
+    public void setvLuggages(Vector<LuggageModel> vLuggages) {
+        this.vLuggages = vLuggages;
+    }
     public LUGAPResponse(int c)
     {
         code = c;
