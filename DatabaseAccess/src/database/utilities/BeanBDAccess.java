@@ -42,6 +42,14 @@ public class BeanBDAccess implements Serializable {
         Configuration cfg = new Configuration();
         ip = cfg.getPropertie("DATABASE_IP");
     }
+    public BeanBDAccess(String t, String u, String us , String p,String i) {
+        type = t;
+        user=us;
+        urlDB = u;
+        password = p;
+        Configuration cfg = new Configuration();
+        ip = i;
+    }
 
     public boolean connectDB()
     {

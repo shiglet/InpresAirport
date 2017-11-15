@@ -9,11 +9,18 @@ import ConfigurationFile.Configuration;
 import database.utilities.BeanBDAccess;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -33,17 +40,75 @@ public class ServletController extends HttpServlet {
      */
     private BeanBDAccess bd;
     @Override
-    public void init()
+    public void init(ServletConfig servletconfig)
     {
-        Configuration cfg = new Configuration();
-        bd = new BeanBDAccess("MYSQL","bd_airport","root","sadikano");
+        System.out.println("SISISIIS");
+        bd = new BeanBDAccess("MYSQL","bd_airport","root","sadikano","localhost");
         bd.connectDB();
+        if(bd!= null )
+            System.out.println("Non null");
     }
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException 
     {
         response.setContentType("text/html;charset=UTF-8");
-        
+        String action = request.getParameter("action");
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        if(action!=null)
+        {
+            if(!isConnected(request))
+            {
+                if(action.equals("Connexion"))
+                {
+                    String username =request.getParameter("username");
+                    String pwd = request.getParameter("password");
+                    boolean isNew = request.getParameter("newclient")!=null;
+                    if(isNew)
+                    {
+                        try 
+                        {
+                            ResultSet rs = bd.executeQuery("SELECT * FROM clients where login = '"+username+"'");
+                            if(rs.next())
+                            {
+                                request.getRequestDispatcher("index.html").forward(request, response);
+                            }
+                            else
+                            {
+                                bd.insertQuery("INSERT INTO clients VALUES ('"+username+"', '"+pwd+"')");
+                            }
+                        }
+                        catch (SQLException ex) 
+                        {
+                            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    else
+                    {
+                        
+                    }
+                }
+            }
+            else
+            {
+                
+            }
+            
+        }
+        else
+            request.getRequestDispatcher("index.html").forward(request, response);
+    }
+    private boolean isConnected(HttpServletRequest request)
+    {
+        HttpSession session = request.getSession(true);
+        return session.getAttribute("Connected")!=null;
+    }
+    private void setConnected(HttpServletRequest request,boolean b)
+    {
+        HttpSession session = request.getSession(true);
+        if(b) session.setAttribute("Connected", "Ok");
+        else session.removeAttribute("Connected");
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
