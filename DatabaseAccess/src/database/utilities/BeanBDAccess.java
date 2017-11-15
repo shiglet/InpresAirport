@@ -5,6 +5,7 @@
  */
 package database.utilities;
 
+import ConfigurationFile.Configuration;
 import java.beans.*;
 import java.io.Serializable;
 import java.sql.*;
@@ -21,7 +22,7 @@ public class BeanBDAccess implements Serializable {
     private String user;
     private String password;
     private Connection con;
-    
+    private String ip;
     public void Close()
     {
         try
@@ -38,6 +39,8 @@ public class BeanBDAccess implements Serializable {
         user=us;
         urlDB = u;
         password = p;
+        Configuration cfg = new Configuration();
+        ip = cfg.getPropertie("DATABASE_IP");
     }
 
     public boolean connectDB()
@@ -48,13 +51,13 @@ public class BeanBDAccess implements Serializable {
             if(type == "MYSQL")
             {
                 Class.forName("com.mysql.jdbc.Driver");
-                urlDB = "jdbc:mysql://localhost:3306/"+urlDB;
+                urlDB = "jdbc:mysql://"+ip+":3306/"+urlDB;
                 System.out.println("Driver MYSQL chargé");
             }
             else if(type=="ORACLE")
             {
                 Class.forName("oracle.jdbc.OracleDriver");
-                urlDB = "jdbc:oracle:thin:@localhost:1521:XE";
+                urlDB = "jdbc:oracle:thin:@"+ip+":1521:XE";
                 System.out.println("Driver ORACLE chargé");
             }
 
@@ -76,6 +79,7 @@ public class BeanBDAccess implements Serializable {
         }
         return ret;
     }
+    
     public synchronized ResultSet executeQuery(String query)
     {
         java.sql.Statement instruc = null;

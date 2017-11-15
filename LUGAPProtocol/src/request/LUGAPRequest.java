@@ -313,7 +313,7 @@ public class LUGAPRequest implements Request, Serializable{
                     LuggageModel l = req.luggage;
                     System.out.println(l.getCharge()+l.getDouane()+l.getRemarques()+l.getReceptionne());
                     bd.insertQuery("LOCK TABLE bagages WRITE");
-                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"' where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
+                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"'where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
                     bd.insertQuery("UNLOCK TABLE");
                     
                     rs = bd.executeQuery("select * from bagages where numerobillet in (select numerobillet from billets where idvol = (select idVol from billets where numeroBillet = '"+l.getNumeroBillet()+"'))");
@@ -326,19 +326,19 @@ public class LUGAPRequest implements Request, Serializable{
                         id = rs.getString("idBagages");
                         r = rs.getString("remarques");
                         recep = rs.getString("receptionne");
-                        d = rs.getString("douane");
-                        c = rs.getString("charge");
-                        b = rs.getString("NumeroBillet");
-                        v = rs.getString("valise");
-                        p = rs.getDouble("poids");
-                        LuggageModel luggage = new LuggageModel(id, p, v, d, r, c, b, recep);
-                        vData.add(luggage);
+                            d = rs.getString("douane");
+                            c = rs.getString("charge");
+                            b = rs.getString("NumeroBillet");
+                            v = rs.getString("valise");
+                            p = rs.getDouble("poids");
+                            LuggageModel luggage = new LuggageModel(id, p, v, d, r, c, b, recep);
+                            vData.add(luggage);
+                        }
+                        rep = new LUGAPResponse(LUGAPResponse.UPDATE_SUCCESS);
+                        rep.setvLuggages(vData);
                     }
-                    rep = new LUGAPResponse(LUGAPResponse.UPDATE_SUCCESS);
-                    rep.setvLuggages(vData);
-                }
-                catch (SQLException ex) 
-                {
+                    catch (SQLException ex) 
+                    {
                     rep = new LUGAPResponse(LUGAPResponse.UPDATE_FAILED);
                     Logger.getLogger(LUGAPRequest.class.getName()).log(Level.SEVERE, null, ex);
                 }

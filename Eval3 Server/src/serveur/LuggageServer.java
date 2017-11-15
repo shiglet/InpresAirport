@@ -26,7 +26,8 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
      */
     private BeanBDAccess bd;
     private Configuration configuration = new Configuration();
-    public LuggageServer() {
+    public LuggageServer() 
+    {
         initComponents();
     }
 
