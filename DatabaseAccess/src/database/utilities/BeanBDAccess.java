@@ -47,7 +47,6 @@ public class BeanBDAccess implements Serializable {
         user=us;
         urlDB = u;
         password = p;
-        Configuration cfg = new Configuration();
         ip = i;
     }
 
