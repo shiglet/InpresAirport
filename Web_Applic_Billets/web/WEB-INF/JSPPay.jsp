@@ -62,6 +62,7 @@
         <p>Numero de Compte bancaire : <input type="text" name="bank"/></p>
         <input type="submit" class="btn btn-success" value="Payer" />
         <input type="hidden" value="ConfirmPayement" name="action"/>
+        <input type="hidden" value="<%=total%>" name="total"/>
     </form>
         <%}
         else

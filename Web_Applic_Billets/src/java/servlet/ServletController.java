@@ -62,7 +62,7 @@ public class ServletController extends HttpServlet {
                 try 
                 {
                     System.out.println("Timer de néttoyage lancé !");
-                    ResultSet rs = bd.executeQuery("select * from reservation where SEC_TO_TIME(TIME_TO_SEC(now()) - TIME_TO_SEC(DateReservation)) > 60*5");
+                    ResultSet rs = bd.executeQuery("select * from reservation where SEC_TO_TIME(TIME_TO_SEC(now()) - TIME_TO_SEC(DateReservation)) > 60*2");
                     while(rs.next())
                     {
                         bd.insertQuery("UPDATE vols set PlaceRestante = PlaceRestante + "+rs.getInt("Place")+" where idVol = "+rs.getInt("idVol"));
@@ -193,9 +193,12 @@ public class ServletController extends HttpServlet {
                                             break;
                                         }
                                     }
+                                    else
+                                    {
+                                        setFlyList(request);
+                                        request.getRequestDispatcher("/WEB-INF/JSPCaddie.jsp").forward(request, response);
+                                    }
                                 }
-                                setFlyList(request);
-                                request.getRequestDispatcher("/WEB-INF/JSPCaddie.jsp").forward(request, response);
                             }
                         } 
                         catch (SQLException ex) 
@@ -230,12 +233,14 @@ public class ServletController extends HttpServlet {
                             try 
                             {
                                 String login = (String)session.getAttribute("Connected");
+                                String total = (String) request.getParameter("total");
                                 ResultSet rs = bd.executeQuery("SELECT * FROM RESERVATION");
                                 while(rs.next())
                                 {
                                     int nbrPlace = rs.getInt("Place");
                                     bd.insertQuery("INSERT INTO Billets (login,NombrePassager, idVol) VALUES('"+login+"',"+nbrPlace+","+rs.getInt("idVol")+")");
                                     bd.insertQuery("DELETE FROM RESERVATION WHERE idReservation = "+rs.getInt("idReservation"));
+                                    bd.insertQuery("INSERT INTO facture (login,total) VALUES('"+login+"',"+total+")");
                                 }
                                 message = "Merci pour votre payement !";
                             } catch (SQLException ex) 
