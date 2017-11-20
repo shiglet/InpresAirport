@@ -87,6 +87,7 @@ public class ServletController extends HttpServlet {
         PrintWriter out = response.getWriter();
         if(action!=null)
         {
+            System.out.println(action);
             switch(action)
             {
                 case "Connexion" : 
@@ -146,11 +147,15 @@ public class ServletController extends HttpServlet {
                 {
                     if(isConnected(request))
                     {
+                        System.out.println("Redirection !");
                         setFlyList(request);
                         request.getRequestDispatcher("/WEB-INF/JSPCaddie.jsp").forward(request, response);
                     }
                     else
+                    {
+                        System.out.println("Not Connected !");
                         request.getRequestDispatcher("/index.html").forward(request, response);
+                    }
                 }
                 break;
                 case "AddToCart" : 

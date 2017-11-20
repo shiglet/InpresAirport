@@ -13,25 +13,36 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Caddie Virtuelle - Inpres Airport</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
     </head>
     <body>
+        <div class="jumbotron text-center">
+            <h1><i class="glyphicon glyphicon-plane"></i> Inpres Airport</h1>
+            <p>Caddie virtuelle</p>
+        </div>
         <h1>Voici les vols disponibles : </h1>
          
     <form  name="Acheter" action="controller" method='GET'>
-        <table border = "1"><tr>
+        <table class="table" border = "1"><tr>
             <caption>Liste des vols</caption>
-                <td>Destination</td>
-                <td>Date départ</td>
-                <td>Places disponibles</td>
-                <td>Prix par place</td>
-                <td>Reserver</td>
+                <td class="text-primary">Destination</td>
+                <td class="text-primary">Date départ</td>
+                <td class="text-primary">Places disponibles</td>
+                <td class="text-primary">Prix par place</td>
+                <td class="text-primary">Reserver</td>
             </tr>
         <%
         String message = (String)request.getAttribute("Message");
         if(message!=null)
         {
             %>
-            <p><%=message%><br/><br/></p>
+        <div class="panel panel-warning">
+            <div class="panel-heading">Message</div>
+            <div class="panel-body"><%=message%></div>
+        </div>
             <%
         }
         Vector<Fly> lFly =(Vector<Fly>) request.getAttribute("FlyList");
@@ -50,18 +61,20 @@
         <%}
         %>
         </table>
-        <input type="submit" value="Ajouter au Caddie" name="ajouter"/>
+        <br/>
+        <input type="submit" class="btn btn-success" value="Ajouter au Caddie" name="ajouter"/>
         <input type="hidden" value="AddToCart" name="action"/>
         </form>
+        <br/>
         <form action="controller" method="GET">
-        <input type="submit" value="Panier" />
+            <div class="text-right"><input type="submit" class="btn btn-danger" value="Panier" /></div>
         <input type="hidden" value="Panier" name="action"/>
     </form>
         <%}
     else
     {
         %>
-        <p>Aucun vol disponible</p>
+        <p class="text-danger">Aucun vol disponible</p>
         <%
     }%>
     </body>

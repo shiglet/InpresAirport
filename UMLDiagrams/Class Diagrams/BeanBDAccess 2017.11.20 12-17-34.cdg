@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="BeanBDAccess">
+  <ClassDiagramComponents>
+    <Class name="BeanBDAccess" package="database.utilities" visibility="public" xPosition="20.0" yPosition="20.0">
+      <Fields>
+        <Field name="rs" type="ResultSet" visibility="private"/>
+        <Field name="type" type="String" visibility="private"/>
+        <Field name="urlDB" type="String" visibility="private"/>
+        <Field name="user" type="String" visibility="private"/>
+        <Field name="password" type="String" visibility="private"/>
+        <Field name="con" type="Connection" visibility="private"/>
+        <Field name="ip" type="String" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="t"/>
+          <Argument type="String" name="u"/>
+          <Argument type="String" name="us"/>
+          <Argument type="String" name="p"/>
+        </Constructor>
+        <Constructor visibility="public">
+          <Argument type="String" name="t"/>
+          <Argument type="String" name="u"/>
+          <Argument type="String" name="us"/>
+          <Argument type="String" name="p"/>
+          <Argument type="String" name="i"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="Close" returnType="void" visibility="public"/>
+        <Method name="connectDB" returnType="boolean" visibility="public"/>
+        <Method name="executeQuery" returnType="ResultSet" visibility="public" isSynchronized="true">
+          <Argument type="String" name="query"/>
+        </Method>
+        <Method name="insertQuery" returnType="void" visibility="public" isSynchronized="true">
+          <Argument type="String" name="query"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations/>
+</ClassDiagram>

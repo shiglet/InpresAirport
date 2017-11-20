@@ -12,22 +12,29 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Payement</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <script src="js/jquery-3.2.1.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
     </head>
     <body>
-        <h1>Payement</h1>
+        <div class="jumbotron text-center">
+            <h1><i class="glyphicon glyphicon-plane"></i> Inpres Airport</h1>
+            <p>Panier</p>
+        </div>
         <%
             Vector<Fly> vReservation = (Vector<Fly>)request.getAttribute("ToPay");
             int total =0;
             if(vReservation!=null && vReservation.size()>0)
             {
             %>
-            <table border = "1">
+            <table class="table" border = "1">
                 <tr>
                     <caption>Panier</caption>
-                    <td>Destination</td>
-                    <td>Place Reservée</td>
-                    <td>Prix par place</td>
-                    <td>Total</td>
+                    <td class="text-primary">Destination</td>
+                    <td class="text-primary">Place Reservée</td>
+                    <td class="text-primary">Prix par place</td>
+                    <td class="text-primary">Total</td>
                 </tr>
             <%
             for(Fly f : vReservation)
@@ -46,26 +53,26 @@
         <tr>
             <td></td>
             <td></td>
-            <td><td>
-            <td><%=total%></td>
+            <td></td>
+            <td class="text-primary"><%=total%>€</td>
         </tr>
     </table>
     <p>Total à payer = <%=total%> €</p>
     <form action="controller" method="GET">
         <p>Numero de Compte bancaire : <input type="text" name="bank"/></p>
-        <input type="submit" value="Payer" />
+        <input type="submit" class="btn btn-success" value="Payer" />
         <input type="hidden" value="ConfirmPayement" name="action"/>
     </form>
         <%}
         else
         {
             %>
-            <p>Vous n'avez rien à payer</p>
+            <p class="text-danger">Vous n'avez rien à payer</p>
             <%
         }
         %>
         <form method="GET" action="controller">
-            <input type="submit" value="Retour" />
+            <div class="text-right"><input type="submit" class="btn btn-danger" value="Retour" /></div>
             <input type="hidden" value="Caddie" name="action"/>
         </form>
     </body>

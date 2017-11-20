@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Multi-package class diagram">
+  <ClassDiagramComponents>
+    <Class name="Fly" package="Model" visibility="public" xPosition="20.0" yPosition="20.0">
+      <Fields>
+        <Field name="idVol" type="int" visibility="private"/>
+        <Field name="destination" type="String" visibility="private"/>
+        <Field name="arriveeEventuelle" type="Date" visibility="private"/>
+        <Field name="depart" type="Date" visibility="private"/>
+        <Field name="place" type="int" visibility="private"/>
+        <Field name="prix" type="int" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="idVol"/>
+          <Argument type="String" name="destination"/>
+          <Argument type="Date" name="arriveeEventuelle"/>
+          <Argument type="Date" name="depart"/>
+          <Argument type="int" name="place"/>
+          <Argument type="int" name="prix"/>
+        </Constructor>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods>
+        <Method name="getPrix" returnType="int" visibility="public"/>
+        <Method name="setPrix" returnType="void" visibility="public">
+          <Argument type="int" name="prix"/>
+        </Method>
+        <Method name="getIdVol" returnType="int" visibility="public"/>
+        <Method name="setIdVol" returnType="void" visibility="public">
+          <Argument type="int" name="idVol"/>
+        </Method>
+        <Method name="getDestination" returnType="String" visibility="public"/>
+        <Method name="setDestination" returnType="void" visibility="public">
+          <Argument type="String" name="destination"/>
+        </Method>
+        <Method name="getArriveeEventuelle" returnType="Date" visibility="public"/>
+        <Method name="setArriveeEventuelle" returnType="void" visibility="public">
+          <Argument type="Date" name="arriveeEventuelle"/>
+        </Method>
+        <Method name="getDepart" returnType="Date" visibility="public"/>
+        <Method name="setDepart" returnType="void" visibility="public">
+          <Argument type="Date" name="depart"/>
+        </Method>
+        <Method name="getPlace" returnType="int" visibility="public"/>
+        <Method name="setPlace" returnType="void" visibility="public">
+          <Argument type="int" name="place"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="ServletController" package="servlet" visibility="public" xPosition="320.0" yPosition="20.0">
+      <Fields>
+        <Field name="bd" type="BeanBDAccess" visibility="public"/>
+      </Fields>
+      <Constructors/>
+      <Methods>
+        <Method name="destroy" returnType="void" visibility="public"/>
+        <Method name="init" returnType="void" visibility="public"/>
+        <Method name="processRequest" returnType="void" visibility="protected">
+          <Argument type="HttpServletRequest" name="request"/>
+          <Argument type="HttpServletResponse" name="response"/>
+        </Method>
+        <Method name="setFlyList" returnType="void" visibility="private">
+          <Argument type="HttpServletRequest" name="request"/>
+        </Method>
+        <Method name="isConnected" returnType="boolean" visibility="private">
+          <Argument type="HttpServletRequest" name="request"/>
+        </Method>
+        <Method name="setConnected" returnType="void" visibility="private">
+          <Argument type="HttpServletRequest" name="request"/>
+          <Argument type="String" name="username"/>
+        </Method>
+        <Method name="doGet" returnType="void" visibility="protected">
+          <Argument type="HttpServletRequest" name="request"/>
+          <Argument type="HttpServletResponse" name="response"/>
+        </Method>
+        <Method name="doPost" returnType="void" visibility="protected">
+          <Argument type="HttpServletRequest" name="request"/>
+          <Argument type="HttpServletResponse" name="response"/>
+        </Method>
+        <Method name="getServletInfo" returnType="String" visibility="public"/>
+        <Method name="setReservation" returnType="void" visibility="private">
+          <Argument type="HttpServletRequest" name="request"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations/>
+</ClassDiagram>
