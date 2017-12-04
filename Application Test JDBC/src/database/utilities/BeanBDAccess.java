@@ -21,7 +21,7 @@ public class BeanBDAccess implements Serializable {
     private String user;
     private String password;
     private Connection con;
-    
+    private String adresse = "localhost";
     public void Close()
     {
         try
@@ -39,6 +39,13 @@ public class BeanBDAccess implements Serializable {
         urlDB = u;
         password = p;
     }
+    public BeanBDAccess(String t, String u, String us , String p,String a) {
+        type = t;
+        user=us;
+        urlDB = u;
+        password = p;
+        adresse = a;
+    }
 
     public boolean connectDB()
     {
@@ -48,13 +55,13 @@ public class BeanBDAccess implements Serializable {
             if(type == "MYSQL")
             {
                 Class.forName("com.mysql.jdbc.Driver");
-                urlDB = "jdbc:mysql://localhost:3306/"+urlDB;
+                urlDB = "jdbc:mysql://"+adresse+":3306/"+urlDB;
                 System.out.println("Driver MYSQL chargé");
             }
             else if(type=="ORACLE")
             {
                 Class.forName("oracle.jdbc.OracleDriver");
-                urlDB = "jdbc:oracle:thin:@localhost:1521:XE";
+                urlDB = "jdbc:oracle:thin:@"+adresse+":1521:XE";
                 System.out.println("Driver ORACLE chargé");
             }
 

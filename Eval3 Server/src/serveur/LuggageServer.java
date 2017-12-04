@@ -113,6 +113,8 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
         trace("server#BeandBDAccess initialisé");
         ServerLuggageThread serverLuggage = new ServerLuggageThread(Integer.parseInt(configuration.getPropertie("PORT_BAGGAGES")), this, new TasksList(),bd);
         serverLuggage.start();
+        ChatThread chat = new ChatThread(bd);
+        chat.start();
     }//GEN-LAST:event_startJBActionPerformed
 
     /**
