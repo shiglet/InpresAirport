@@ -38,7 +38,8 @@ public class Application_Billets extends javax.swing.JFrame {
     private int port;
     private ObjectOutputStream oos ;
     private ObjectInputStream ois ;
-    public Application_Billets() {
+    public Application_Billets() 
+    {
         initComponents();
         configuration = new Configuration();
         IP = configuration.getPropertie("BILLETS_IP");
@@ -110,6 +111,28 @@ public class Application_Billets extends javax.swing.JFrame {
             Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
         }
         return msgD;
+    }
+    
+    private void logout() 
+    {
+        if(socket==null || socket.isClosed())
+                return;
+        try
+        {
+            oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_LOGOUT));
+            TICKMAPResponse rep = (TICKMAPResponse) ois.readObject();
+            if(rep.getCode() == TICKMAPResponse.SUCCESS)
+                System.out.println("Deconnexion réussie !");
+            oos.close();
+            ois.close();
+            socket.close();
+        } 
+        catch (IOException ex) 
+        {
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     /**
      * This method is called from within the constructor to initialize the form.

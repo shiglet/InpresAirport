@@ -78,6 +78,7 @@ public class TICKMAPRequest implements Request, Serializable
                             break;
                         case REQUEST_LOGOUT : 
                             treatLogout();
+                            disconnected = true;
                             break;
                     }
                     try 
@@ -167,8 +168,23 @@ public class TICKMAPRequest implements Request, Serializable
                 return msgD;
             }
             
-            private void treatLogout() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            private void treatLogout()
+            {
+                try 
+                {
+                    if(state == "NON_AUTHENTICATED")
+                    {
+                        rep = new TICKMAPResponse(TICKMAPResponse.FAILED,"Vous n'êtes pas authentifié");
+                        oos.writeObject(new TICKMAPResponse(TICKMAPResponse.SUCCESS));
+                        return;
+                    }
+                    oos.writeObject(new TICKMAPResponse(TICKMAPResponse.SUCCESS));
+                    cs.trace("server#client deconnecté");
+                } 
+                catch (IOException ex) 
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             
         };
