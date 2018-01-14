@@ -40,7 +40,6 @@ public class TICKMAPRequest implements Request, Serializable
     public Message getMessage() {
         return message;
     }
-    private byte[] digest;
     private Message message;
     
     public TICKMAPRequest(int type,Message message)
@@ -52,11 +51,6 @@ public class TICKMAPRequest implements Request, Serializable
     public TICKMAPRequest(int type)
     {
         this.type = type;
-    }
-     public TICKMAPRequest(int type,byte[] digest)
-    {
-        this.type = type;
-        this.digest = digest;
     }
     
     @Override
