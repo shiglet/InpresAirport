@@ -34,7 +34,6 @@ public class Application_Billets extends javax.swing.JFrame {
      */
     private Socket socket;
     private Configuration configuration;
-    private String trameSep;
     private String IP;
     private int port;
     private ObjectOutputStream oos ;

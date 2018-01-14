@@ -64,12 +64,10 @@ public class TICKMAPRequest implements Request, Serializable
             private TICKMAPRequest req = new TICKMAPRequest(type,message);
             private Configuration configuration = new Configuration();
             private ResultSet rs;
-            private String sep;
             
             @Override
             public void run() 
             {
-                sep = "\\"+configuration.getPropertie("TRAME_SEPARATOR");
                 boolean disconnected = false;
                 while(!disconnected)
                 {
