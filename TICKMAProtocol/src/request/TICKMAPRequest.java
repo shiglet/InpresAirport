@@ -35,6 +35,7 @@ public class TICKMAPRequest implements Request, Serializable
 {
     public static final int REQUEST_LOGIN = 0;
     public static final int REQUEST_LOGOUT = 1;
+    public static final int REQUEST_HANDSHAKE = 2;
     private int type;
 
     public Message getMessage() {
@@ -79,6 +80,9 @@ public class TICKMAPRequest implements Request, Serializable
                         case REQUEST_LOGOUT : 
                             treatLogout();
                             disconnected = true;
+                            break;
+                        case REQUEST_HANDSHAKE : 
+                            treatHandshake();
                             break;
                     }
                     try 
@@ -185,6 +189,11 @@ public class TICKMAPRequest implements Request, Serializable
                 {
                     Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            }
+
+            private void treatHandshake() 
+            {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
             
         };
