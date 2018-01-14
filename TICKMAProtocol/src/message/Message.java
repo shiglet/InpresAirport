@@ -3,19 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package applicationbillets;
+package message;
+
+import java.io.Serializable;
 
 /**
  *
  * @author Sadik
  */
-public class ApplicationBillets {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
+public abstract class Message implements Serializable
+{
     
 }

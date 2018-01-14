@@ -19,6 +19,9 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import message.LoginMessage;
+import request.TICKMAPRequest;
+import response.TICKMAPResponse;
 
 /**
  *
@@ -68,12 +71,13 @@ public class Application_Billets extends javax.swing.JFrame {
                 double r = Math.random();
                 
                 byte[] msgD = buildDigest(time,r,password,login);
-                LUGAPRequest req = new LUGAPRequest(LUGAPRequest.REQUEST_LOGIN,login+trameSep+time+trameSep+r,msgD);
+                System.out.println("l = "+login+" r = "+r+" time = "+time+"");
+                TICKMAPRequest req = new TICKMAPRequest(TICKMAPRequest.REQUEST_LOGIN,new LoginMessage(r,msgD,login,time));
                 oos.writeObject(req);
-                LUGAPResponse rep = (LUGAPResponse)ois.readObject();
-                if(rep.getCode() == LUGAPResponse.LOGIN_SUCCESS)
+                TICKMAPResponse rep = (TICKMAPResponse)ois.readObject();
+                if(rep.getCode() == TICKMAPResponse.SUCCESS)
                     break;
-                JOptionPane.showMessageDialog(rootPane, rep.message);
+                JOptionPane.showMessageDialog(rootPane, rep.getMessage());
                 oos.close();
                 ois.close();
                 socket.close();
@@ -82,10 +86,9 @@ public class Application_Billets extends javax.swing.JFrame {
         } 
         catch (IOException | ClassNotFoundException ex) 
         {
-            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-        getFly();
     }
     
     public byte[] buildDigest(long time,double r,String password,String login)
@@ -105,7 +108,7 @@ public class Application_Billets extends javax.swing.JFrame {
             md.update(baos.toByteArray());
             msgD = md.digest();
         } catch (NoSuchAlgorithmException | NoSuchProviderException | IOException ex) {
-            Logger.getLogger(Luggages_App.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
         }
         return msgD;
     }
