@@ -56,7 +56,7 @@ public class ChatThread extends Thread {
         ADRESSE = config.getPropertie("ADRESSE_MULTICAST");
         sep = config.getPropertie("TRAME_SEPARATOR");
         end = config.getPropertie("END_TRAME");
-        try
+        /*try
         {
             adresseGroupe = InetAddress.getByName(ADRESSE);
             socketGroupe = new MulticastSocket(PORT_CHAT);
@@ -66,7 +66,7 @@ public class ChatThread extends Thread {
         catch (IOException ex) 
         {
             Logger.getLogger(ChatThread.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         this.bd = bd;
     }
     public void run()

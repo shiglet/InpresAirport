@@ -43,6 +43,7 @@ public class ThreadReception extends Thread{
             try
             {
                 byte[] buf = new byte[1000];
+                
                 DatagramPacket dtg = new DatagramPacket(buf, buf.length);
                 socketGroupe.receive(dtg);
                 //To do ... Update de la jtable

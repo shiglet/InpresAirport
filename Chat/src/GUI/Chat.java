@@ -61,7 +61,7 @@ public class Chat extends javax.swing.JFrame {
             //InetAddress ia = InetAddress.getByName("192.168.43.33");
             //System.out.println((NetworkInterface.getByInetAddress(ia)).getName());
             //socketGroupe.setNetworkInterface(NetworkInterface.getByName("eth4"));//Vmware Interface
-            //socketGroupe.setNetworkInterface(NetworkInterface.getByName("wlan1"));//Wifi interface
+            socketGroupe.setNetworkInterface(NetworkInterface.getByName("wlan2"));//Wifi interface
             socketGroupe.joinGroup(adresseGroupe);
             thr = new ThreadReception(login, socketGroupe, chatJL,sep);
             thr.start();
@@ -70,7 +70,8 @@ public class Chat extends javax.swing.JFrame {
             socketGroupe.send(dtg);
             System.out.println("Message envoyé");
         } 
-        catch (IOException ex) {
+        catch (IOException ex) 
+        {
             Logger.getLogger(Chat.class.getName()).log(Level.SEVERE, null, ex);
         }
         

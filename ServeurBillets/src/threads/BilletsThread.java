@@ -3,27 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package serveur;
+package threads;
 
 import ConfigurationFile.Configuration;
 import database.utilities.BeanBDAccess;
+import interfaces.Request;
+import interfaces.ServerConsole;
+import interfaces.TasksSource;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import interfaces.Request;
-import interfaces.ServerConsole;
-import interfaces.TasksSource;
+
 /**
  *
  * @author Sadik
  */
-public class ServerLuggageThread extends Thread 
+public class BilletsThread extends Thread
 {
     private int port;
     private ServerSocket SSocket = null;
@@ -36,7 +33,8 @@ public class ServerLuggageThread extends Thread
     private int waitingTasks;
     private BeanBDAccess bd; 
     private Configuration configuration;
-    public ServerLuggageThread(int p,ServerConsole sc, TasksSource ts, BeanBDAccess b)
+    
+    public BilletsThread(int p,ServerConsole sc, TasksSource ts, BeanBDAccess b)
     {
         port = p; 
         app = sc;
