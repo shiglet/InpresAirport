@@ -9,7 +9,7 @@ package message;
  *
  * @author Sadik
  */
-public class LoginMessage extends Message
+public class LoginMessage implements Message
 {
     private double random;
     private byte[] digest;

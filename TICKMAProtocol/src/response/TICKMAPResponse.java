@@ -7,6 +7,7 @@ package response;
 
 import interfaces.Response;
 import java.io.Serializable;
+import message.Message;
 
 /**
  *
@@ -19,9 +20,14 @@ public class TICKMAPResponse implements Response, Serializable
     public static int FAILED = 2;
 
     private int code;
-    private String message;
+    private Message message;
     
-    public String getMessage()
+    
+    public boolean isSuccess()
+    {
+        return code != FAILED;
+    }
+    public Message getMessage()
     {
         return message;
     }
@@ -31,7 +37,7 @@ public class TICKMAPResponse implements Response, Serializable
         this.code = code;
     }
     
-    public TICKMAPResponse(int code,String message)
+    public TICKMAPResponse(int code,Message message)
     {
         this.code = code;
         this.message = message;

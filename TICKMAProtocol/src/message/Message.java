@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author Sadik
  */
-public abstract class Message implements Serializable
+public interface Message extends Serializable
 {
     
 }
