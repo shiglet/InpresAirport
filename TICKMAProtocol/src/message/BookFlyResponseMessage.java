@@ -11,19 +11,21 @@ import interfaces.Message;
  *
  * @author Sadik
  */
-public class SimpleMessage implements Message
+public class BookFlyResponseMessage implements Message
 {
-    private String Message;
+    byte[] data;
 
-    public String getMessage() {
-        return Message;
+    public BookFlyResponseMessage(byte[] data) {
+        this.data = data;
     }
 
-    public void setMessage(String Message) {
-        this.Message = Message;
+    public byte[] getData() {
+        return data;
     }
 
-    public SimpleMessage(String Message) {
-        this.Message = Message;
+    public void setData(byte[] data) {
+        this.data = data;
     }
+
+   
 }

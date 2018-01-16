@@ -17,6 +17,7 @@ public class Fly implements Serializable
     private int idVol;
     private String destination;
     private int prix;
+    private int placeRestante;
 
     @Override
     public String toString() {
@@ -63,12 +64,21 @@ public class Fly implements Serializable
         this.depart = depart;
     }
 
-    public Fly(int idVol, String destination, int prix, Timestamp dateDepart, String depart) {
+    public Fly(int idVol, String destination, int prix, Timestamp dateDepart, String depart,int placeRestante) {
         this.idVol = idVol;
         this.destination = destination;
         this.prix = prix;
         this.dateDepart = dateDepart;
         this.depart = depart;
+        this.placeRestante = placeRestante;
+    }
+
+    public int getPlaceRestante() {
+        return placeRestante;
+    }
+
+    public void setPlaceRestante(int placeRestante) {
+        this.placeRestante = placeRestante;
     }
     private Timestamp dateDepart;
     private String depart;

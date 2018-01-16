@@ -5,8 +5,11 @@
  */
 package ui;
 
+import paymessage.PayMessage;
 import ConfigurationFile.Configuration;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,26 +24,32 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JOptionPane;
-import message.FlyMessage;
-import message.HandshakeMessage;
-import message.LoginMessage;
-import message.SimpleMessage;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import message.*;
+import models.*;
+import paymessage.PayResponseMessage;
 import request.TICKMAPRequest;
 import response.TICKMAPResponse;
+import uimodels.TableItemModel;
 
 /**
  *
@@ -61,6 +70,7 @@ public class Application_Billets extends javax.swing.JFrame {
     private SecretKey cipherK;
     private PrivateKey clientPrK;
     private PublicKey serverPK;
+    private PublicKey paymentPK;
     public Application_Billets() 
     {
         initComponents();
@@ -81,6 +91,9 @@ public class Application_Billets extends javax.swing.JFrame {
             clientPrK = (PrivateKey) ks.getKey("client", keystorePassword.toCharArray());
             X509Certificate cert = (X509Certificate) (ks.getCertificate("serveurcertificat"));
             serverPK = cert.getPublicKey();
+            cert = (X509Certificate) (ks.getCertificate("paymentcertificat"));
+            paymentPK = cert.getPublicKey();
+            
         }
         catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) 
         {
@@ -195,10 +208,11 @@ public class Application_Billets extends javax.swing.JFrame {
                 byte[] authKeyBytes = cipher.doFinal(a);
                 byte[] cipherKeyBytes = cipher.doFinal(c);
                 //Convert Byte keys  into SecretKey
-                authenticationK = new SecretKeySpec(authKeyBytes, 0, authKeyBytes.length, "DES");
-                cipherK = new SecretKeySpec(cipherKeyBytes, 0, cipherKeyBytes.length, "DES");
+                authenticationK = new SecretKeySpec(authKeyBytes, 0, authKeyBytes.length, "Rijndael");
+                cipherK = new SecretKeySpec(cipherKeyBytes, 0, cipherKeyBytes.length, "Rijndael");
                 rep = (TICKMAPResponse)ois.readObject();
-                System.out.println("Nombre d'élements : "+((FlyMessage)rep.getMessage()).getFlies().size());
+                TableItemModel tableItemModel = new TableItemModel(((FlyMessage)rep.getMessage()).getFlies());
+                fliesJT.setModel(tableItemModel);
             }
             else
             {
@@ -219,21 +233,182 @@ public class Application_Billets extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        fliesJT = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        nbrPlaceJTF = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        fliesJT.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(fliesJT);
+
+        jButton1.setText("Réserver");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        nbrPlaceJTF.setText("1");
+
+        jLabel1.setText("Nombre de place :");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 751, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 798, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nbrPlaceJTF, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton1))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 507, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(nbrPlaceJTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        if(nbrPlaceJTF.getText().length()<1)
+            return;
+        TableItemModel model = (TableItemModel)fliesJT.getModel();
+        Fly f = model.getFlyAt(fliesJT.getSelectedRow());
+        int nbrPlace = Integer.parseInt(nbrPlaceJTF.getText());
+        Vector<Voyageur> vVoyageur = new Vector<Voyageur>();
+        for(int i=0; i<nbrPlace;i++)
+        {
+            VoyageurConfirm vc = new VoyageurConfirm(this, true);
+            vc.setVisible(true);
+            vVoyageur.add(vc.voyageur);
+        }
+        
+        try 
+        {
+            Cipher cipher = Cipher.getInstance("Rijndael/ECB/PKCS5Padding","BC");
+            cipher.init(Cipher.ENCRYPT_MODE,cipherK);
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream o = new ObjectOutputStream(baos);
+            o.writeObject(vVoyageur);
+            
+            byte[] vVoyageurBytes = baos.toByteArray();
+            byte[] vVoyageurEncrypted = cipher.doFinal(vVoyageurBytes);
+            
+            baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(f.getIdVol());
+            
+            byte[] idVolBytes = baos.toByteArray();
+            byte[] idVolEncrypted = cipher.doFinal(idVolBytes);
+            
+            oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_BOOKFLY,new BookMessage(idVolEncrypted,vVoyageurEncrypted)));
+            TICKMAPResponse rep = (TICKMAPResponse)ois.readObject();
+            BookFlyResponseMessage message = (BookFlyResponseMessage)rep.getMessage();
+            cipher.init(Cipher.DECRYPT_MODE,cipherK);
+            
+            byte[] dataBytes = cipher.doFinal(message.getData());
+            ByteArrayInputStream bais = new ByteArrayInputStream(dataBytes);
+            DataInputStream dis = new DataInputStream(bais);
+            int numeroBillet = dis.readInt();
+            int prixTotal = dis.readInt();
+            
+           
+            System.out.println("Numero de Billet = "+numeroBillet+" PrixTotal = "+prixTotal);
+            int result = JOptionPane.showConfirmDialog(rootPane, "Veuillez confirmer s'il vous plaît : Numéro de billet "+numeroBillet+" et le prix total : "+prixTotal+" €","Confirmation",JOptionPane.YES_OPTION);
+            if(result == 0)//Yes
+            {
+                Mac hmac = Mac.getInstance("HMAC-MD5","BC");
+                hmac.init(authenticationK);
+                String m = "Client a bien confirmé";
+                hmac.update(m.getBytes());
+                byte[] hmacBytes = hmac.doFinal();
+                oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMFLY,new ConfirmFlyMessage(hmacBytes, m)));
+                rep = (TICKMAPResponse)ois.readObject();
+                if(rep.getCode() == TICKMAPResponse.SUCCESS)
+                {
+                    Socket s = new Socket(configuration.getPropertie("IP_PAYMENT"),Integer.parseInt(configuration.getPropertie("PORT_PAY")));
+                    ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+                    ObjectInputStream is = new ObjectInputStream(s.getInputStream());
+                    cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+                    cipher.init(Cipher.ENCRYPT_MODE, paymentPK);
+                    
+                    String carte = JOptionPane.showInputDialog(this,"Numéro de carte bancaire : ");
+                    baos = new ByteArrayOutputStream();
+                    
+                    dos = new DataOutputStream(baos);
+                    dos.writeInt(prixTotal);
+                    byte[] carteEncrypted = cipher.doFinal(carte.getBytes());
+                    byte[] nomEncrypted = cipher.doFinal(((Voyageur)vVoyageur.elementAt(0)).getNom().getBytes());
+                    byte[] totalEncrypted = cipher.doFinal(baos.toByteArray());
+                    Signature sign = Signature.getInstance("SHA1withRSA","BC"); 
+                    sign.initSign(clientPrK);
+                    sign.update(carte.getBytes());
+                    sign.update(((Voyageur)vVoyageur.elementAt(0)).getNom().getBytes());
+                    sign.update(baos.toByteArray());
+                    byte[] signature = sign.sign();
+                    os.writeObject(new PayMessage(PayMessage.REQUEST_PAYEMENT,carteEncrypted,nomEncrypted, totalEncrypted,signature));
+                    PayResponseMessage msg = (PayResponseMessage)is.readObject();
+                    s.close();
+                    
+                    cipher.init(Cipher.ENCRYPT_MODE,serverPK);
+                    hmac = Mac.getInstance("HMAC-MD5","BC");
+                    hmac.init(authenticationK);
+                    hmac.update(carte.getBytes());
+                    hmacBytes = hmac.doFinal();
+                    if(msg.getType() == PayResponseMessage.SUCCESS)
+                    {
+                        
+                        oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMPAY, new ConfirmPayMessage(ConfirmPayMessage.SUCCESS,hmacBytes,cipher.doFinal(carte.getBytes()))));
+                        rep = (TICKMAPResponse) ois.readObject();
+                        if(rep.getCode() == rep.SUCCESS)
+                        {
+                            JOptionPane.showMessageDialog(this,"Achat définitif effectué avec succès!");
+                        }
+                        else
+                        {
+                            JOptionPane.showMessageDialog(this,"Erreur lors de l'achat!");
+                        }
+                    }
+                    else
+                    {
+                        oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMPAY, new ConfirmPayMessage(ConfirmPayMessage.FAILED,cipher.doFinal(carte.getBytes()),hmacBytes)));
+                    }
+                }
+            }
+        }
+        catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IOException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException ex)
+        {
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SignatureException ex) {
+            Logger.getLogger(Application_Billets.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -273,5 +448,10 @@ public class Application_Billets extends javax.swing.JFrame {
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable fliesJT;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField nbrPlaceJTF;
     // End of variables declaration//GEN-END:variables
 }

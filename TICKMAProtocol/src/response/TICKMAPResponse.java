@@ -7,7 +7,7 @@ package response;
 
 import interfaces.Response;
 import java.io.Serializable;
-import message.Message;
+import interfaces.Message;
 
 /**
  *

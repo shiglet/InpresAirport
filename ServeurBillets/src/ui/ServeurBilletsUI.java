@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 import threads.BilletsThread;
+import threads.PaymentThread;
 import utils.TasksList;
 
 /**
@@ -35,6 +36,8 @@ public class ServeurBilletsUI extends javax.swing.JFrame implements ServerConsol
         trace("server#BeandBDAccess initialisé");
         BilletsThread serverBillets = new BilletsThread(Integer.parseInt(configuration.getPropertie("PORT_BILLETS")), this, new TasksList(),bd);
         serverBillets.start();
+        PaymentThread serverPayment = new PaymentThread(Integer.parseInt(configuration.getPropertie("PORT_PAY")), this,bd);
+        serverPayment.start();
     }
 
     /**

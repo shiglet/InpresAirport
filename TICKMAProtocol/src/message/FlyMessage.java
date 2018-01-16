@@ -5,6 +5,7 @@
  */
 package message;
 
+import interfaces.Message;
 import java.util.Vector;
 import models.Fly;
 

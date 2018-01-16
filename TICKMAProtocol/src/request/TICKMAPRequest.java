@@ -5,12 +5,15 @@
  */
 package request;
 
+import interfaces.Message;
 import ConfigurationFile.Configuration;
 import database.utilities.BeanBDAccess;
 import interfaces.Request;
 import interfaces.ServerConsole;
 import java.applet.Applet;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,14 +45,11 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import message.FlyMessage;
-import message.HandshakeMessage;
-import message.LoginMessage;
-import message.Message;
-import message.SimpleMessage;
-import models.Fly;
+import message.*;
+import models.*;
 import response.TICKMAPResponse;
 
 /**
@@ -61,6 +61,9 @@ public class TICKMAPRequest implements Request, Serializable
     public static final int REQUEST_LOGIN = 0;
     public static final int REQUEST_LOGOUT = 1;
     public static final int REQUEST_HANDSHAKE = 2;
+    public static final int REQUEST_BOOKFLY = 3;
+    public static final int REQUEST_CONFIRMFLY = 4;
+    public static final int REQUEST_CONFIRMPAY = 5;
     
     private int type;
 
@@ -97,7 +100,9 @@ public class TICKMAPRequest implements Request, Serializable
             private PrivateKey serverPrK;
             private SecretKey authenticationK;
             private SecretKey cipherK;
-            
+            private int idVol=0;
+            private int idPassager=0;
+            private int prixTotal= 0;
             @Override
             public void run() 
             {
@@ -117,6 +122,15 @@ public class TICKMAPRequest implements Request, Serializable
                         case REQUEST_HANDSHAKE : 
                             treatHandshake();
                             break;
+                        case REQUEST_BOOKFLY : 
+                            treatBookFly();
+                            break;
+                        case REQUEST_CONFIRMFLY :
+                            treatConfirmFly();
+                            break;
+                        case REQUEST_CONFIRMPAY :
+                            treatConfirmPay();
+                        break;
                     }
                     try 
                     {
@@ -262,7 +276,7 @@ public class TICKMAPRequest implements Request, Serializable
                     Vector<Fly> flies = new Vector<Fly>();
                     while(rs.next())
                     {
-                        flies.add(new Fly(rs.getInt("idVol"),rs.getString("destination"),rs.getInt("PrixPlace"),rs.getTimestamp("HeureDepart"),rs.getString("depart")));
+                        flies.add(new Fly(rs.getInt("idVol"),rs.getString("destination"),rs.getInt("PrixPlace"),rs.getTimestamp("HeureDepart"),rs.getString("depart"),rs.getInt("PlaceRestante")));
                         System.out.println(flies.lastElement());
                     }
                     rep = new TICKMAPResponse(TICKMAPResponse.SUCCESS,new FlyMessage(flies));
@@ -311,6 +325,165 @@ public class TICKMAPRequest implements Request, Serializable
                 }
                 cs.trace("server#Erreur lors de la génération des clés secrètes !");
                 return false;
+            }
+
+            private void treatBookFly() 
+            {
+                cs.trace("server#Réservation d'un vol !");
+                BookMessage message = (BookMessage) req.getMessage();
+                int numeroBillet = 0;
+                Cipher cipher;
+                try 
+                {
+                    cipher = Cipher.getInstance("Rijndael/ECB/PKCS5Padding","BC");
+                    cipher.init(Cipher.DECRYPT_MODE,cipherK);
+                    
+                    byte[] idVolBytes = cipher.doFinal(message.getIdVol());
+                    byte[] vVoyageurBytes = cipher.doFinal(message.getvVoyageur());
+                    
+                    ByteArrayInputStream  bais = new ByteArrayInputStream(vVoyageurBytes);
+                    ObjectInputStream i = new ObjectInputStream(bais);
+                    
+                    Vector<Voyageur> vVoyageur = (Vector<Voyageur>)i.readObject();
+                    
+                    bais = new ByteArrayInputStream(idVolBytes);
+                    DataInputStream dis = new DataInputStream(bais);
+                    idVol = dis.readInt();
+                    
+                    Voyageur v = vVoyageur.elementAt(0);//voyageur de référence
+                    rs = bd.executeQuery("SELECT * from passager where numeroID="+v.getNumeroID());
+                    if(rs.next())
+                    {
+                        idPassager = rs.getInt("idPassager");
+                    }
+                    else
+                    {
+                        bd.insertQuery("INSERT INTO PASSAGER (Nom,Prenom,NumeroID) values ('"+v.getNom()+"','"+v.getPrenom()+"','"+v.getNumeroID()+"')");
+                        rs = bd.executeQuery("SELECT * from passager where numeroID="+v.getNumeroID());
+                        if(rs.next())
+                            idPassager = rs.getInt("idPassager");
+                    }
+                    synchronized(bd)
+                    {
+                        bd.insertQuery("INSERT INTO RESERVATION (`idPassager`, `Place`, `idVol`) VALUES('"+idPassager+"',"+vVoyageur.size()+","+idVol+")");
+                        bd.insertQuery("UPDATE vols set PlaceRestante = PlaceRestante - "+vVoyageur.size()+" where idVol = "+idVol+"");
+                        bd.insertQuery("INSERT into billets (idPassager, NombrePassager, idVol) values ("+idPassager+","+vVoyageur.size()+","+idVol+")");
+                    }
+                    rs = bd.executeQuery("SELECT * FROM BILLETS where idvol ="+idVol+" AND idPassager="+idPassager);
+                    if(rs.next())
+                    {
+                        numeroBillet = rs.getInt("NumeroBillet");
+                    }
+                    rs = bd.executeQuery("SELECT * FROM vols where idVol = "+idVol);
+                    if(rs.next())
+                    {
+                        prixTotal = vVoyageur.size() * rs.getInt("PrixPlace");
+                    }
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(baos);
+                    dos.writeInt(numeroBillet);
+                    dos.writeInt(prixTotal);
+                    cipher.init(Cipher.ENCRYPT_MODE,cipherK);
+                    rep = new TICKMAPResponse(TICKMAPResponse.SUCCESS,new BookFlyResponseMessage(cipher.doFinal(baos.toByteArray())));
+                    rs.close();
+                } 
+                catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | IOException | ClassNotFoundException | SQLException ex) 
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            private void treatConfirmFly() 
+            {
+                ConfirmFlyMessage message = (ConfirmFlyMessage)req.getMessage();
+                String m = message.getMessage();
+                byte[] hmacRecu = message.getHmac();
+                
+                try 
+                {
+                    Mac hLocal = Mac.getInstance("HMAC-MD5","BC");
+                    hLocal.init(authenticationK);
+                    hLocal.update(m.getBytes());
+                    byte[] hbLocal = hLocal.doFinal();
+                    if(MessageDigest.isEqual(hmacRecu, hbLocal))
+                    {
+                        cs.trace("server#HMAC vérifié");
+                        rep = new TICKMAPResponse(TICKMAPResponse.SUCCESS);
+                    }
+                    else
+                    {
+                        cs.trace("server#HMAC incorrecte");
+                        rep = new TICKMAPResponse(TICKMAPResponse.FAILED);
+                    }
+                }
+                catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException ex)
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            private void treatConfirmPay() 
+            {
+                ConfirmPayMessage message = (ConfirmPayMessage) req.getMessage();
+                byte[] encryptedCarte = message.getCarte();
+                byte[] hmacRecu = message.getHmac();
+                
+                try 
+                {
+                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+                    cipher.init(Cipher.DECRYPT_MODE, serverPrK);
+                    
+                    String carte = new String(cipher.doFinal(encryptedCarte));
+                    System.out.println("Carte sur serveur = "+carte);
+                    
+                    Mac hLocal = Mac.getInstance("HMAC-MD5","BC");
+                    hLocal.init(authenticationK);
+                    hLocal.update(carte.getBytes());
+                    byte[] hbLocal = hLocal.doFinal();
+                    if(MessageDigest.isEqual(hmacRecu, hbLocal))
+                    {
+                        cs.trace("server#HMAC vérifié");
+                        if(message.getType()==message.SUCCESS)
+                        {
+                            bd.insertQuery("DELETE FROM RESERVATION WHERE idPassager = "+idPassager+" AND idVol = "+idVol);
+                            bd.insertQuery("INSERT INTO facture (login,total,carte) VALUES('"+idPassager+"',"+prixTotal+","+carte+")");
+                            rep = new TICKMAPResponse(TICKMAPResponse.SUCCESS);
+                        }
+                        else
+                        {
+                            cancelBook();
+                            bd.insertQuery("INSERT INTO facture (login,total,carte) VALUES('"+idPassager+"',"+prixTotal+",'"+carte+" payement refusé !')");
+                        }
+                    }
+                    else
+                    {
+                        cs.trace("server#HMAC incorrecte");
+                        rep = new TICKMAPResponse(TICKMAPResponse.FAILED);
+                        cancelBook();
+                    }
+                }
+                catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | SQLException ex)
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            private void cancelBook() 
+            {
+                try 
+                {
+                    rs = bd.executeQuery("SELECT * FROM reservation where idPassager = "+idPassager+" AND idVol = "+idVol);
+                    while(rs.next())
+                    {
+                        bd.insertQuery("UPDATE vols set PlaceRestante = PlaceRestante + "+rs.getInt("Place")+" where idVol = "+rs.getInt("idVol"));
+                    }
+                    bd.insertQuery("DELETE FROM RESERVATION WHERE idPassager = "+idPassager+" AND idVol = "+idVol);
+                    bd.insertQuery("DELETE FROM BILLETS WHERE idPassager = "+idPassager+" AND idVol = "+idVol);
+                } 
+                catch (SQLException ex) 
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             
         };

@@ -5,6 +5,8 @@
  */
 package message;
 
+import interfaces.Message;
+
 /**
  *
  * @author Sadik

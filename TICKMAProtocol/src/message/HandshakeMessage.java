@@ -5,6 +5,7 @@
  */
 package message;
 
+import interfaces.Message;
 import javax.crypto.SecretKey;
 
 /**

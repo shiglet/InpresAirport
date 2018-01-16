@@ -86,7 +86,6 @@ public class BeanBDAccess implements Serializable {
         }
         return ret;
     }
-    
     public synchronized ResultSet executeQuery(String query)
     {
         java.sql.Statement instruc = null;
