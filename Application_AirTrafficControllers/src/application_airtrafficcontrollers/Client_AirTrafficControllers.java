@@ -10,6 +10,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,25 +26,36 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Client_AirTrafficControllers extends javax.swing.JFrame {
 
+
     /**
      * Creates new form Client_AirTrafficControllers
      */
     private Socket cliSocket;
     private Configuration config;
-    private String end;
-    private String sep;
+    public String end;
+    public String sep;
     private int port_tower;
     private String host;
     private DataOutputStream dos;
     private DataInputStream dis;
     public static final int GET_FLY = 1;
+    public static final int WARN_CHECKIN = 2;
+    public static final int SUCCESS = 100;
+    public static final int CHECK_BAGGAGE = 3;
+    public static final int CHOOSE_FLY = 4;
+    public static final int FAILED = 101;
+
     private Vector<String> columnNames ;
     private Vector<Vector<String>> vVols;
+    public String CheckInIP;
+    public int CheckinPort;
     public Client_AirTrafficControllers() {
         initComponents();
         config = new Configuration();
         host = config.getPropertie("TOWER_IP");
+        CheckInIP = config.getPropertie("CHECKINIPURGENCE");
         port_tower = Integer.parseInt(config.getPropertie("PORT_TOWER"));
+        CheckinPort = Integer.parseInt(config.getPropertie("CHECKIPORTURGENCE"));
         System.out.println("host = "+host+" port ="+port_tower);
         end = config.getPropertie("END_TRAME");
         sep = config.getPropertie("TRAME_SEPARATOR");
@@ -118,10 +133,22 @@ public class Client_AirTrafficControllers extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public int idVol;
+    public Date time;
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        int idVol = Integer.parseInt(vVols.get(volsJT.getSelectedRow()).get(0));
-        System.out.println("idvol = "+idVol);
+        idVol = Integer.parseInt(vVols.get(volsJT.getSelectedRow()).get(0));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+        try 
+        {
+            time = dateFormat.parse(vVols.get(volsJT.getSelectedRow()).get(3));
+        } catch (ParseException ex)
+        {
+            Logger.getLogger(Client_AirTrafficControllers.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        sendMessage(CHOOSE_FLY+sep+idVol+end);
+        FinalizeFly fly = new FinalizeFly(this,true);
+        fly.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

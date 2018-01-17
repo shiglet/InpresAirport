@@ -271,7 +271,7 @@ public class LUGAPRequest implements Request, Serializable{
                 try 
                 {
                     bd.insertQuery("LOCK TABLES bagages READ,billets READ");
-                    rs = bd.executeQuery("select * from bagages where numerobillet in (select numerobillet from billets where idvol = '"+idVol+"')");
+                    rs = bd.executeQuery("select * from bagages where idBillets in (select numeroBillet from billets where idvol = '"+idVol+"')");
                     System.out.println(idVol);
                     bd.insertQuery("UNLOCK TABLES");
                     Vector<LuggageModel> vData = new Vector<LuggageModel>();
@@ -285,7 +285,7 @@ public class LUGAPRequest implements Request, Serializable{
                         recep = rs.getString("receptionne");
                         d = rs.getString("douane");
                         c = rs.getString("charge");
-                        b = rs.getString("NumeroBillet");
+                        b = rs.getString("idBillets");
                         v = rs.getString("valise");
                         p = rs.getDouble("poids");
                         LuggageModel luggage = new LuggageModel(id, p, v, d, r, c, b, recep);
@@ -313,10 +313,10 @@ public class LUGAPRequest implements Request, Serializable{
                     LuggageModel l = req.luggage;
                     System.out.println(l.getCharge()+l.getDouane()+l.getRemarques()+l.getReceptionne());
                     bd.insertQuery("LOCK TABLE bagages WRITE");
-                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"'where idBagages = '"+l.getIdBaggages()+"' and numeroBillet = '"+l.getNumeroBillet()+"'");
+                    bd.insertQuery("UPDATE bagages set receptionne = '"+l.getReceptionne()+"',charge = '"+l.getCharge()+"', douane ='"+l.getDouane()+"', remarques='"+l.getRemarques()+"'where idBagages = '"+l.getIdBaggages()+"' and idbillets = '"+l.getNumeroBillet()+"'");
                     bd.insertQuery("UNLOCK TABLE");
                     
-                    rs = bd.executeQuery("select * from bagages where numerobillet in (select numerobillet from billets where idvol = (select idVol from billets where numeroBillet = '"+l.getNumeroBillet()+"'))");
+                    rs = bd.executeQuery("select * from bagages where idBillets in (select idBillets from billets where idvol = (select idVol from billets where NumeroBillet = '"+l.getNumeroBillet()+"'))");
 
                     Vector<LuggageModel> vData = new Vector<LuggageModel>();
                     while(rs.next())
@@ -328,7 +328,7 @@ public class LUGAPRequest implements Request, Serializable{
                         recep = rs.getString("receptionne");
                             d = rs.getString("douane");
                             c = rs.getString("charge");
-                            b = rs.getString("NumeroBillet");
+                            b = rs.getString("idBillets");
                             v = rs.getString("valise");
                             p = rs.getDouble("poids");
                             LuggageModel luggage = new LuggageModel(id, p, v, d, r, c, b, recep);

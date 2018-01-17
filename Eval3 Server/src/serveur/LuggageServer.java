@@ -114,6 +114,8 @@ public class LuggageServer extends javax.swing.JFrame  implements ServerConsole{
         serverLuggage.start();
         CheckTicketThread check = new CheckTicketThread(Integer.parseInt(configuration.getPropertie("PORT_BAGGESCHECK")),bd);
         check.start();
+        CheckBaggages baggage = new CheckBaggages(Integer.parseInt(configuration.getPropertie("URGENCEBAGGAGE_PORT")),bd);
+        baggage.start();
         /*ChatThread chat = new ChatThread(bd);
         chat.start();*/
     }//GEN-LAST:event_startJBActionPerformed

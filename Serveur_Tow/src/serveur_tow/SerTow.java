@@ -11,7 +11,8 @@ import database.utilities.BeanBDAccess;
  *
  * @author Sadik
  */
-public class SerTow extends javax.swing.JFrame {
+public class SerTow extends javax.swing.JFrame 
+{
 
     /**
      * Creates new form SerTow

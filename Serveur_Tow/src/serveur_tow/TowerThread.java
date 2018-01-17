@@ -26,6 +26,11 @@ import java.util.logging.Logger;
 public class TowerThread extends Thread 
 {
     private static final int GET_FLY = 1;
+    private static final int WARN_CHECKIN = 2;
+    public static final int CHECK_BAGGAGE = 3;
+    public static final int CHOOSE_FLY = 4;
+    private static final int SUCCESS = 100;
+    private static final int FAILED = 101;
     private Configuration config = new Configuration();
     private Socket CSocket;
     private ServerSocket SSocket;
@@ -67,6 +72,7 @@ public class TowerThread extends Thread
             {
                 Thread th = new Thread(new Runnable()
                 {
+                    private int currentFly=0;
                     private DataOutputStream dos;
                     private DataInputStream dis;
                     @Override
@@ -80,6 +86,12 @@ public class TowerThread extends Thread
                             while(!finished)
                             {
                                 String message = readMessage();
+                                if(message==null)
+                                {
+                                    System.out.println("finii !");
+                                    finished = true;
+                                    continue;
+                                }
                                 String[] messageSplit = message.split("\\"+sep);
                                 int type = Integer.parseInt(messageSplit[0]);
                                 System.out.println("message reçu : "+message);
@@ -97,6 +109,53 @@ public class TowerThread extends Thread
                                             message = message+sep+idVol+sep+destination+sep+depart+sep+date;
                                         }
                                     break;
+                                    case CHOOSE_FLY : 
+                                        currentFly = Integer.parseInt(messageSplit[1]);
+                                        break;
+                                    case WARN_CHECKIN : 
+                                        /*try
+                                        {
+                                        Socket s = new Socket(config.getPropertie("CHECKINIPURGENCE"),Integer.parseInt(config.getPropertie("CHECKIPORTURGENCE")));
+                                        DataOutputStream d= new DataOutputStream(s.getOutputStream());
+                                        String m = 1000+end;
+                                        d.write(m.trim().getBytes());
+                                        d.flush();
+                                        s.close();
+                                        }
+                                        catch (IOException ex)
+                                        {
+                                        Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
+                                        }*/
+                                        bd.executeQuery("UPDATE avion set etat ='BUSY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                        message = SUCCESS+"";
+                                        break;
+                                    case CHECK_BAGGAGE : 
+                                        try 
+                                        {
+                                            Socket s = new Socket(config.getPropertie("SERVER_IP"),Integer.parseInt(config.getPropertie("URGENCEBAGGAGE_PORT")));
+                                            DataOutputStream d= new DataOutputStream(s.getOutputStream());
+                                            DataInputStream i = new DataInputStream(s.getInputStream());
+                                            message = message + end;
+                                            d.write(message.trim().getBytes());
+                                            d.flush();
+                                            message = readMessage(i);
+                                            System.out.println("Check baggage de "+message);
+                                            if(Integer.parseInt(message) == SUCCESS)
+                                            {
+                                                bd.executeQuery("UPDATE avion set etat ='READY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                                message =SUCCESS+"";
+                                            }
+                                            else
+                                            {
+                                                message =FAILED+"";
+                                            }
+                                            s.close();
+                                        } 
+                                        catch (IOException ex) 
+                                        {
+                                            Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                        break;
                                 }
                                 System.out.println("Envoie de "+message);
                                 sendMessage(message+end);
@@ -125,7 +184,24 @@ public class TowerThread extends Thread
                             
                         } 
                         catch (IOException ex) {
-                            Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
+                            return null;
+                        }
+                        return message.toString().trim();
+                    }
+                    public String readMessage(DataInputStream i)
+                    {
+                        StringBuffer message=new StringBuffer();
+                        try 
+                        {
+                            byte b;
+                            while ((b=i.readByte())!= (byte)end.charAt(0) )
+                            {
+                                if (b!=end.charAt(0))
+                                    message.append((char) b);
+                            }
+                            
+                        } 
+                        catch (IOException ex) {
                             return null;
                         }
                         return message.toString().trim();
@@ -135,7 +211,8 @@ public class TowerThread extends Thread
                         try {
                             dos.write(s.trim().getBytes());
                             dos.flush();
-                        } catch (IOException ex) {
+                        } catch (IOException ex) 
+                        {
                             Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
