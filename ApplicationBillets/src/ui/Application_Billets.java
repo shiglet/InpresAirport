@@ -396,7 +396,8 @@ public class Application_Billets extends javax.swing.JFrame {
                     }
                     else
                     {
-                        oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMPAY, new ConfirmPayMessage(ConfirmPayMessage.FAILED,cipher.doFinal(carte.getBytes()),hmacBytes)));
+                        oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMPAY, new ConfirmPayMessage(ConfirmPayMessage.FAILED,hmacBytes,cipher.doFinal(carte.getBytes()))));
+                        JOptionPane.showMessageDialog(this,"Erreur lors de l'achat!");
                     }
                 }
             }

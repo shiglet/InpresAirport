@@ -14,7 +14,7 @@ import interfaces.Message;
 public class PayResponseMessage implements Message
 {
     public static final int SUCCESS = 1;
-    public static final int FAILED = 1;
+    public static final int FAILED = 2;
     private int type;
 
     public int getType() {

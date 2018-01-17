@@ -79,9 +79,13 @@ public class PaymentThread extends Thread
             paymentPrK = (PrivateKey) ks.getKey("serverpaymentkey", keystorePassword.toCharArray());
             X509Certificate cert = (X509Certificate) (ks.getCertificate("clientcertificat"));
             clientPK = cert.getPublicKey();
-        } catch (FileNotFoundException ex) {
+        } 
+        catch (FileNotFoundException ex) 
+        {
             Logger.getLogger(PaymentThread.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) {
+        }
+        catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) 
+        {
             Logger.getLogger(PaymentThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -144,7 +148,7 @@ public class PaymentThread extends Thread
                             {
                                 Random rnd = new Random();
                                 int r = rnd.nextInt(10-1+1)+1;//1 à 10 compris;
-                                if(r==10)
+                                if(r<11)
                                 {
                                     //Refus
                                     oos.writeObject(new PayResponseMessage(PayResponseMessage.FAILED));
@@ -152,7 +156,7 @@ public class PaymentThread extends Thread
                                 else
                                 {
                                     //payement accepté
-                                    oos.writeObject(new PayResponseMessage(PayResponseMessage.FAILED));
+                                    oos.writeObject(new PayResponseMessage(PayResponseMessage.SUCCESS));
                                 }
                             }
                             else
