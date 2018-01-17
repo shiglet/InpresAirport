@@ -6,7 +6,9 @@
 typedef struct
 {
     string Host;
+    string BaggageIP;
     int CheckPort;
+    int BaggagePort;
     char TrameSeparator;
     char EndTrame;
     char CSVSeparator;
@@ -35,7 +37,7 @@ string ToString(T);
 vector<string> Tokenize(string message, string key = string()+Config.TrameSeparator+Config.EndTrame);
 string CreateMessage(int, vector<string> msg = vector<string>());
 //Files
-bool CheckTicket(string,string);
+bool CheckTicket(string,string,int);
 bool CheckLogin(string,string);
 void ReplaceInFile(string,string ,string);
 //Luggages

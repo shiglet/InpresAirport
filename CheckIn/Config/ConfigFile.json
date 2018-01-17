@@ -1,7 +1,7 @@
 {
     "host" : "192.168.40.128",
-    "checkport" : 32010,
-    "trameseparator" : ";",
+    "checkport" : 32000,
+    "trameseparator" : "$",
     "endtrame" : "#",
     "csvseparator" : ";",
     "loginfile" : "login.csv",
@@ -9,5 +9,7 @@
     "fly" : "VOL 362 POWDER-AIRLINES - Peshawar 6h30",
     "flynumber" : "362-22082017-",
     "exceededprice" : 2.5,
-    "log" : true
+    "log" : true,
+    "baggageport" : 32018,
+    "baggageip" : "192.168.1.2"
 }

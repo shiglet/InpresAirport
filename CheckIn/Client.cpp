@@ -7,15 +7,23 @@ void SendLogin(string l, string p);
 void TreatLogout(string msg);
 void TreatLuggages(int);
 void TreatWeight(string message);
+pthread_mutex_t messageReceived;
 int DisplayMenu();
+pthread_t threadReception;
+void * ThreadFunc(int * p);
+pthread_cond_t received;
 int main()
 {
     ReadConfigFile();
     struct sockaddr_in socketAddr;
+    int x=0;
     Log("Server Checkin InpresAirport",INFO_TYPE);
     string msg,login,pass;
     vector<string> vMessage;
-
+    
+	pthread_cond_init(&received, NULL); 
+    pthread_mutex_init(&messageReceived, NULL); 
+    pthread_create(&threadReception,NULL,(void*(*)(void*))ThreadFunc,&x);
     bool authenticated = false;
     int choix;
     do
@@ -38,11 +46,16 @@ int main()
                 Log("Connecting to the server",INFO_TYPE);
                 Connect(socketAddr,cliSocket);
             }
+            cout<<"Send login"<<endl;
             SendLogin(login,pass);
-            message = Receive(cliSocket);
+            cout<<"Waiting server response"<<endl;
+            message = Receive(cliSocket);           
+            cout<<"Server response received"<<endl;
             if((authenticated = (message == ToString(LOGIN_SUCCESS)+Config.EndTrame)))
             {
                 Log("Authentification réussie.",SUCCESS_TYPE);
+
+                pthread_create(&threadReception,NULL,(void*(*)(void*))ThreadFunc,&x);
                 break;
             }
             Log("La combinaison de login/password est incorrecte !",ERROR_TYPE);
@@ -56,25 +69,26 @@ int main()
             //Disconnect 
                 authenticated = false;
                 Send(cliSocket,CreateMessage(LOGOUT_REQUEST));
-                TreatLogout(Receive(cliSocket));
+                pthread_cond_wait(&received, &messageReceived);                            
+                TreatLogout(message);
                 break;
             case 1 :
             //Check ticket
             {
-                cout<<"Numéro de billet ?"+Config.FlyNumber;
+                cout<<"Numéro de billet ?";
                 cin>>ticketNumber;
-                ticketNumber = Config.FlyNumber + ticketNumber;
+                ticketNumber = ticketNumber;
                 cout<<"Nombre d'accompagnants ?";
                 cin>>passager;
                 vMessage = {ticketNumber,passager};
                 Send(cliSocket,CreateMessage(CHECK_TICKET,vMessage));
-                message = Receive(cliSocket);
+                pthread_cond_wait(&received, &messageReceived);
                 if(message == ToString(CHECK_SUCCESS)+Config.EndTrame)
                 {
                     cout<<"Le billet est correcte, encodage des/du baggage(s) ..."<<endl;
 
                     TreatLuggages(atoi(passager.c_str()));
-                    message = Receive(cliSocket);
+                    pthread_cond_wait(&received, &messageReceived);                                
                     TreatWeight(message);
                 }
                 else
@@ -86,7 +100,8 @@ int main()
         }
     }while(choix!=2);
     Send(cliSocket,CreateMessage(LOGOUT_REQUEST));
-    TreatLogout(Receive(cliSocket));    
+    pthread_cond_wait(&received, &messageReceived);                
+    TreatLogout(message);    
 }
 
 void SendLogin(string l, string p)
@@ -162,5 +177,25 @@ void TreatWeight(string message)
     {
         Log("Payement annulé",ERROR_TYPE);
         Send(cliSocket,CreateMessage(PAYMENT_CANCELED));
+    }
+}
+void * ThreadFunc(int * p)
+{
+    while(1)
+    {
+        if(cliSocket!=0)
+        {
+            message = Receive(cliSocket);
+            if(message == ToString(1000)+Config.EndTrame)
+            {
+                cout<<"*** FIN DES OPERATIONS DE CHECK-IN ! ***"<<endl;
+                Close(cliSocket);
+                exit(0);
+            }
+            else
+            {
+                pthread_cond_signal(&received);
+            }
+        }
     }
 }

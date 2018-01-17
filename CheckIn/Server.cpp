@@ -6,9 +6,12 @@ pthread_mutex_t luggageFileMutex;
 pthread_mutex_t ticketFileMutex;
 pthread_cond_t currentIndexCond;
 pthread_t threadHandle[MAX_CLIENTS];
-
+pthread_t threadUrgence;
+int baggageSocket;
+struct sockaddr_in baggageAddr;
 int currentIndex=-1;
 void * ThreadFunc(int * p);
+void * FuncUrgence(int * p);
 int connectedSocket[MAX_CLIENTS] = {-1};
 int main()
 {
@@ -18,6 +21,10 @@ int main()
 
     Log("Reading config file",INFO_TYPE);
     ReadConfigFile();
+    pthread_create(&threadUrgence,NULL,(void*(*)(void*))FuncUrgence,&j);
+    baggageSocket = CreateSocket();
+    baggageAddr = GetAddr(Config.BaggageIP,Config.BaggagePort);
+    Connect(baggageAddr,baggageSocket);
 
     pthread_mutex_init(&currentIndexMutex, NULL); 
     pthread_mutex_init(&luggageFileMutex, NULL);
@@ -75,6 +82,11 @@ int main()
             pthread_cond_signal(&currentIndexCond);
         }
     }while(1);
+
+
+
+    Close(listenningSocket);
+    Close(baggageSocket);
 }
 void * ThreadFunc(int * p)
 {
@@ -90,7 +102,7 @@ void * ThreadFunc(int * p)
         pthread_mutex_lock(&currentIndexMutex);
         
         while (currentIndex == -1)
-            pthread_cond_wait(&currentIndexCond, &currentIndexMutex);
+        pthread_cond_wait(&currentIndexCond, &currentIndexMutex);
 
         treatedClient = currentIndex;
         currentIndex = -1;
@@ -110,6 +122,7 @@ void * ThreadFunc(int * p)
             {
                 case LOGIN_OFFICER :
                     if(state != NON_AUTHENTICATED) break;
+                    cout<<"Check login"<<endl;
                     if(CheckLogin(tokens[1],tokens[2]))
                     {
                         Log("Logging success",SUCCESS_TYPE);
@@ -136,7 +149,7 @@ void * ThreadFunc(int * p)
                     {
                         if(state != AUTHENTICATED) break;
                         pthread_mutex_lock(&ticketFileMutex);
-                        bool ticket = CheckTicket(tokens[1],tokens[2]);
+                        bool ticket = CheckTicket(tokens[1],tokens[2],baggageSocket);
                         pthread_mutex_unlock(&ticketFileMutex);
                         if(ticket)
                         {
@@ -200,4 +213,24 @@ void * ThreadFunc(int * p)
         Close(socket);
     }
     return 0;
+}
+
+void * FuncUrgence(int * p)
+{
+    int urgenceSocket = CreateSocket();
+    struct sockaddr_in addrUrgence = GetAddr(Config.Host,52000);
+    Bind(addrUrgence,urgenceSocket);
+    Listen(urgenceSocket,5);
+    int j;
+    int serviceUrgence = Accept(addrUrgence, urgenceSocket);
+    string urgenceMessage = Receive(serviceUrgence);
+
+    if(urgenceMessage == ToString(1000)+Config.EndTrame)
+    {
+        for (j=0; j < MAX_CLIENTS; j++)
+        {
+            if(connectedSocket[j]!=-1)
+                Send(connectedSocket[j],ToString(1000)+Config.EndTrame);
+        }
+    }
 }

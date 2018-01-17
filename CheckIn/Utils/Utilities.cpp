@@ -1,4 +1,6 @@
 #include "Utilities.h"
+#include "../Network/SocketUtilities.h"
+#include "../Protocol/CIMP.h"
 Configuration Config;
 
 void Log(string log, int type)
@@ -39,7 +41,9 @@ void ReadConfigFile()
     // Load the json file in this ptree
     pt::read_json("../Config/ConfigFile.json", root);
     Config.Host = root.get<string>("host");
+    Config.BaggageIP = root.get<string>("baggageip");
     Config.CheckPort = root.get<int>("checkport");
+    Config.BaggagePort = root.get<int>("baggageport");
     Config.TrameSeparator = root.get<char>("trameseparator");
     Config.EndTrame = root.get<char>("endtrame");
     Config.CSVSeparator = root.get<char>("csvseparator");
@@ -78,9 +82,9 @@ bool CheckLogin(string login, string password)
 
 
 //CheckTicket
-bool CheckTicket(string ticketNumber, string count)
+bool CheckTicket(string ticketNumber, string count,int baggageSocket)
 {
-    using namespace boost;
+    /*using namespace boost;
     ifstream in(Config.TicketFile.c_str());
     if (!in.is_open())
     {
@@ -102,7 +106,17 @@ bool CheckTicket(string ticketNumber, string count)
         }
     }
     in.close();
-    return false;
+    return false;*/    
+
+    vector<string> vMessage = {ticketNumber,count};
+    Send(baggageSocket,CreateMessage(7,vMessage));
+
+    string message = Receive(baggageSocket);
+    if(message == ToString(CHECK_SUCCESS)+Config.EndTrame)
+        return true;
+    else 
+        return false;
+
 }
 
 vector<string> Tokenize(string message, string key)
