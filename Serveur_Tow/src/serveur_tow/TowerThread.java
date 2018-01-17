@@ -29,8 +29,12 @@ public class TowerThread extends Thread
     private static final int WARN_CHECKIN = 2;
     public static final int CHECK_BAGGAGE = 3;
     public static final int CHOOSE_FLY = 4;
+    public static final int GET_PISTE = 5;
+    public static final int CHOOSE_PISTE = 6;
     private static final int SUCCESS = 100;
     private static final int FAILED = 101;
+    private static final int TAKING_OFF = 7;
+    private static final int FLYING = 8;
     private Configuration config = new Configuration();
     private Socket CSocket;
     private ServerSocket SSocket;
@@ -59,6 +63,7 @@ public class TowerThread extends Thread
         {
             try
             {
+                System.out.println("Attente d'un client");
                 CSocket = SSocket.accept();
                 System.out.println("Client connecté");
             } 
@@ -99,7 +104,7 @@ public class TowerThread extends Thread
                                 {
                                     case GET_FLY : 
                                         message = GET_FLY+"";
-                                        ResultSet rs = bd.executeQuery("SELECT * FROM vols WHERE HeureDepart < NOW() + INTERVAL 3 HOUR AND HeureDepart >= NOW()");
+                                        ResultSet rs = bd.executeQuery("SELECT * FROM vols WHERE HeureDepart < NOW() + INTERVAL 3 HOUR AND HeureDepart >= NOW() AND idavion in (SELECT idAvion from avion where etat = 'libre')");
                                         while(rs.next())
                                         {
                                             int idVol = rs.getInt("idVol");
@@ -111,22 +116,30 @@ public class TowerThread extends Thread
                                     break;
                                     case CHOOSE_FLY : 
                                         currentFly = Integer.parseInt(messageSplit[1]);
+                                        rs = bd.executeQuery("SELECT * FROM vols WHERE HeureDepart < NOW() + INTERVAL 3 HOUR AND HeureDepart >= NOW() AND idavion in (SELECT idAvion from avion where etat = 'libre') and idVol = "+currentFly);
+                                        if(rs.next())
+                                        {
+                                            bd.insertQuery("UPDATE avion set etat ='BUSY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                            message = ""+SUCCESS;
+                                        }
+                                        else
+                                            message = ""+FAILED;
                                         break;
                                     case WARN_CHECKIN : 
-                                        /*try
+                                        try
                                         {
-                                        Socket s = new Socket(config.getPropertie("CHECKINIPURGENCE"),Integer.parseInt(config.getPropertie("CHECKIPORTURGENCE")));
-                                        DataOutputStream d= new DataOutputStream(s.getOutputStream());
-                                        String m = 1000+end;
-                                        d.write(m.trim().getBytes());
-                                        d.flush();
-                                        s.close();
+                                            Socket s = new Socket(config.getPropertie("CHECKINIPURGENCE"),Integer.parseInt(config.getPropertie("CHECKIPORTURGENCE")));
+                                            DataOutputStream d= new DataOutputStream(s.getOutputStream());
+                                            String m = 1000+end;
+                                            d.write(m.trim().getBytes());
+                                            d.flush();
+                                            s.close();
                                         }
                                         catch (IOException ex)
                                         {
-                                        Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
-                                        }*/
-                                        bd.executeQuery("UPDATE avion set etat ='BUSY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                            Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                        bd.insertQuery("UPDATE avion set etat ='CHECKIN_OFF' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
                                         message = SUCCESS+"";
                                         break;
                                     case CHECK_BAGGAGE : 
@@ -142,7 +155,8 @@ public class TowerThread extends Thread
                                             System.out.println("Check baggage de "+message);
                                             if(Integer.parseInt(message) == SUCCESS)
                                             {
-                                                bd.executeQuery("UPDATE avion set etat ='READY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                                
+                                                bd.insertQuery("UPDATE avion set etat ='READY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
                                                 message =SUCCESS+"";
                                             }
                                             else
@@ -156,6 +170,39 @@ public class TowerThread extends Thread
                                             Logger.getLogger(TowerThread.class.getName()).log(Level.SEVERE, null, ex);
                                         }
                                         break;
+                                    case GET_PISTE :
+                                        rs = bd.executeQuery("SELECT * FROM piste where etat ='libre'");
+                                        boolean vide = true;
+                                        message = SUCCESS+"";
+                                        while(rs.next())
+                                        {
+                                            vide = false;
+                                            message = message+sep+rs.getString("nom");
+                                        }
+                                        if(vide)
+                                        {
+                                            message = FAILED+"";
+                                        }
+                                        break;
+                                    case CHOOSE_PISTE :
+                                        rs = bd.executeQuery("SELECT * FROM piste where etat ='libre' and nom ='"+messageSplit[1]+"'");
+                                        if(rs.next())
+                                        {
+                                            bd.insertQuery("UPDATE avion set etat ='READY_TO_FLY' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                            bd.insertQuery("UPDATE piste set etat ='occupé' where nom = '"+messageSplit[1]+"'");
+                                            message = SUCCESS+"";
+                                        }
+                                        else
+                                            message = FAILED+"";
+                                        break;
+                                    case TAKING_OFF : 
+                                        bd.insertQuery("UPDATE avion set etat ='TAKING_OFF' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                        message = SUCCESS+"";
+                                        break;
+                                    case FLYING :
+                                        bd.insertQuery("UPDATE avion set etat ='FLYING' where idAvion in (SELECT idAvion from vols where idvol = "+currentFly+")");
+                                        message = SUCCESS+"";
+                                        
                                 }
                                 System.out.println("Envoie de "+message);
                                 sendMessage(message+end);
@@ -217,7 +264,7 @@ public class TowerThread extends Thread
                         }
                     }
                 });
-                th.run();
+                th.start();
             }
         }
     }

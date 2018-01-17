@@ -30,6 +30,8 @@ public class FinalizeFly extends javax.swing.JDialog {
         this.parent = parent;
         initComponents();
         signalerJB.setEnabled(true);
+        choisirJB.setVisible(false);
+        pistesJCMB.setVisible(false);
     }
 
     /**
@@ -56,6 +58,9 @@ public class FinalizeFly extends javax.swing.JDialog {
         flyingJB = new javax.swing.JRadioButton();
         signalerJB = new javax.swing.JButton();
         checkbaggageJB = new javax.swing.JButton();
+        getpisteJB = new javax.swing.JButton();
+        pistesJCMB = new javax.swing.JComboBox<>();
+        choisirJB = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -73,6 +78,7 @@ public class FinalizeFly extends javax.swing.JDialog {
 
         buttonGroup1.add(busyJB);
         busyJB.setSelected(true);
+        busyJB.setEnabled(false);
         busyJB.setFocusable(false);
         busyJB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -81,19 +87,44 @@ public class FinalizeFly extends javax.swing.JDialog {
         });
 
         buttonGroup1.add(checkinoffJB);
+        checkinoffJB.setEnabled(false);
         checkinoffJB.setFocusable(false);
 
         buttonGroup1.add(readyJB);
+        readyJB.setEnabled(false);
         readyJB.setFocusable(false);
 
         buttonGroup1.add(readytoflyJB);
+        readytoflyJB.setEnabled(false);
         readytoflyJB.setFocusable(false);
 
         buttonGroup1.add(takingoffJB);
+        takingoffJB.setEnabled(false);
         takingoffJB.setFocusable(false);
+        takingoffJB.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                takingoffJBStateChanged(evt);
+            }
+        });
+        takingoffJB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                takingoffJBActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(flyingJB);
+        flyingJB.setEnabled(false);
         flyingJB.setFocusable(false);
+        flyingJB.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                flyingJBStateChanged(evt);
+            }
+        });
+        flyingJB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                flyingJBActionPerformed(evt);
+            }
+        });
 
         signalerJB.setText("Signaler fin check in");
         signalerJB.setEnabled(false);
@@ -111,6 +142,28 @@ public class FinalizeFly extends javax.swing.JDialog {
             }
         });
 
+        getpisteJB.setText("Get Pistes");
+        getpisteJB.setEnabled(false);
+        getpisteJB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getpisteJBActionPerformed(evt);
+            }
+        });
+
+        pistesJCMB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        pistesJCMB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pistesJCMBActionPerformed(evt);
+            }
+        });
+
+        choisirJB.setText("Choisir piste");
+        choisirJB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                choisirJBActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -118,6 +171,12 @@ public class FinalizeFly extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(signalerJB)
+                        .addGap(26, 26, 26)
+                        .addComponent(checkbaggageJB)
+                        .addGap(18, 18, 18)
+                        .addComponent(getpisteJB))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -147,15 +206,13 @@ public class FinalizeFly extends javax.swing.JDialog {
                                 .addComponent(takingoffJB)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(flyingJB))
-                            .addComponent(jLabel6)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(signalerJB)
-                        .addGap(26, 26, 26)
-                        .addComponent(checkbaggageJB)))
-                .addContainerGap(20, Short.MAX_VALUE))
+                            .addComponent(jLabel6)
+                            .addComponent(flyingJB))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(choisirJB, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pistesJCMB, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(22, 22, 22))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -167,7 +224,8 @@ public class FinalizeFly extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
                     .addComponent(jLabel5)
-                    .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(pistesJCMB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(busyJB)
@@ -176,10 +234,12 @@ public class FinalizeFly extends javax.swing.JDialog {
                     .addComponent(readytoflyJB)
                     .addComponent(takingoffJB)
                     .addComponent(flyingJB))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(signalerJB)
-                    .addComponent(checkbaggageJB))
+                    .addComponent(checkbaggageJB)
+                    .addComponent(getpisteJB)
+                    .addComponent(choisirJB))
                 .addGap(43, 43, 43))
         );
 
@@ -233,7 +293,8 @@ public class FinalizeFly extends javax.swing.JDialog {
         if(Integer.parseInt(message) == Client_AirTrafficControllers.SUCCESS)
         {
             checkbaggageJB.setEnabled(false);
-            readyJB.setEnabled(true);
+            readyJB.setSelected(true);
+            getpisteJB.setEnabled(true);
             JOptionPane.showMessageDialog(this,"Tous les baggages sont bien chargés !");
 
         }
@@ -242,6 +303,83 @@ public class FinalizeFly extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this,"Tous les baggages n'ont pas été chargé !");
         }
     }//GEN-LAST:event_checkbaggageJBActionPerformed
+
+    private void getpisteJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getpisteJBActionPerformed
+        // TODO add your handling code here:
+        parent.sendMessage(Client_AirTrafficControllers.GET_PISTE+parent.end);
+        
+        String message = parent.readMessage();
+        String[] messageSplit = message.split("\\"+parent.sep);
+        if(Integer.parseInt(messageSplit[0]) == Client_AirTrafficControllers.SUCCESS)
+        {
+            pistesJCMB.removeAllItems();
+            for(int i =1;i<messageSplit.length;i++)
+            {
+                pistesJCMB.addItem(messageSplit[i]);
+                pistesJCMB.setVisible(true);
+                choisirJB.setVisible(true);
+                getpisteJB.setEnabled(false);
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(this,"Fail ! toutes les pistes sont occupés !");
+        }
+    }//GEN-LAST:event_getpisteJBActionPerformed
+
+    private void pistesJCMBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pistesJCMBActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pistesJCMBActionPerformed
+
+    private void choisirJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_choisirJBActionPerformed
+        // TODO add your handling code here:
+        parent.sendMessage(parent.CHOOSE_PISTE+parent.sep+(String)pistesJCMB.getSelectedItem()+parent.end);
+        String message = parent.readMessage();
+        if(Integer.parseInt(message) == Client_AirTrafficControllers.SUCCESS)
+        {
+            readytoflyJB.setSelected(true);
+            getpisteJB.setEnabled(false);
+            choisirJB.setVisible(false);
+            pistesJCMB.setVisible(false);
+            takingoffJB.setEnabled(true);
+            JOptionPane.showMessageDialog(this,"Piste libre et attribué !");
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(this,"La piste n'est plus libre!");
+            pistesJCMB.setVisible(false);
+            choisirJB.setVisible(false);
+            getpisteJB.setEnabled(true);
+        }
+    }//GEN-LAST:event_choisirJBActionPerformed
+
+    private void takingoffJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_takingoffJBActionPerformed
+        // TODO add your handling code here:
+        System.out.println("Coucou ?");
+        parent.sendMessage(parent.TAKING_OFF+parent.end);
+        if(Integer.parseInt(parent.readMessage()) == parent.SUCCESS)
+        {
+            takingoffJB.setEnabled(false);
+            flyingJB.setEnabled(true);
+        }
+    }//GEN-LAST:event_takingoffJBActionPerformed
+
+    private void flyingJBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_flyingJBActionPerformed
+        // TODO add your handling code here:
+        parent.sendMessage(parent.FLYING+parent.end);
+        if(Integer.parseInt(parent.readMessage()) == parent.SUCCESS)
+        {
+            flyingJB.setEnabled(false);
+        }
+    }//GEN-LAST:event_flyingJBActionPerformed
+
+    private void flyingJBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_flyingJBStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_flyingJBStateChanged
+
+    private void takingoffJBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_takingoffJBStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_takingoffJBStateChanged
     private DataOutputStream dos ;
     private DataInputStream dis;
     public String readMessage()
@@ -282,13 +420,16 @@ public class FinalizeFly extends javax.swing.JDialog {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton checkbaggageJB;
     private javax.swing.JRadioButton checkinoffJB;
+    private javax.swing.JButton choisirJB;
     private javax.swing.JRadioButton flyingJB;
+    private javax.swing.JButton getpisteJB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JComboBox<String> pistesJCMB;
     private javax.swing.JRadioButton readyJB;
     private javax.swing.JRadioButton readytoflyJB;
     private javax.swing.JButton signalerJB;

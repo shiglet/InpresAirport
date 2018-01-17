@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -44,11 +45,16 @@ public class Client_AirTrafficControllers extends javax.swing.JFrame {
     public static final int CHECK_BAGGAGE = 3;
     public static final int CHOOSE_FLY = 4;
     public static final int FAILED = 101;
-
+    public static final int GET_PISTE = 5;
+    
     private Vector<String> columnNames ;
     private Vector<Vector<String>> vVols;
     public String CheckInIP;
     public int CheckinPort;
+    public static final int CHOOSE_PISTE = 6;
+    public static final int TAKING_OFF = 7;
+    public static final int FLYING = 8;
+    
     public Client_AirTrafficControllers() {
         initComponents();
         config = new Configuration();
@@ -147,8 +153,14 @@ public class Client_AirTrafficControllers extends javax.swing.JFrame {
             Logger.getLogger(Client_AirTrafficControllers.class.getName()).log(Level.SEVERE, null, ex);
         }
         sendMessage(CHOOSE_FLY+sep+idVol+end);
-        FinalizeFly fly = new FinalizeFly(this,true);
-        fly.setVisible(true);
+        if(Integer.parseInt(readMessage()) == SUCCESS)
+        {
+            FinalizeFly fly = new FinalizeFly(this,true);
+            fly.setVisible(true);
+            getFly();
+        }
+        else
+            JOptionPane.showMessageDialog(this, "Erreur le vol est déjà attribué ou parti !");
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**

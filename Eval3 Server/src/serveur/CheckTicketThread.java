@@ -74,7 +74,7 @@ public class CheckTicketThread extends Thread
             {
                 String message = readMessage();
                 if(message==null)
-                    break;
+                    continue;
                 String[] messageSplit = message.split("\\"+sep);
                 System.out.println("message = "+message+"  0 = "+messageSplit[0]+" sep = "+sep);
                 if(Integer.parseInt(messageSplit[0]) == CHECK_TICKET)
@@ -132,7 +132,6 @@ public class CheckTicketThread extends Thread
         } 
         catch (IOException ex) 
         {
-            Logger.getLogger(CheckTicketThread.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
         return message.toString().trim();

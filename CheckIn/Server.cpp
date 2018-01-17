@@ -220,17 +220,25 @@ void * FuncUrgence(int * p)
     int urgenceSocket = CreateSocket();
     struct sockaddr_in addrUrgence = GetAddr(Config.Host,52000);
     Bind(addrUrgence,urgenceSocket);
-    Listen(urgenceSocket,5);
-    int j;
-    int serviceUrgence = Accept(addrUrgence, urgenceSocket);
-    string urgenceMessage = Receive(serviceUrgence);
-
-    if(urgenceMessage == ToString(1000)+Config.EndTrame)
+    while(1)
     {
-        for (j=0; j < MAX_CLIENTS; j++)
+        Listen(urgenceSocket,5);
+        int j;
+        int serviceUrgence = Accept(addrUrgence, urgenceSocket);
+        string urgenceMessage = Receive(serviceUrgence);
+
+        if(urgenceMessage == ToString(1000)+Config.EndTrame)
         {
-            if(connectedSocket[j]!=-1)
-                Send(connectedSocket[j],ToString(1000)+Config.EndTrame);
+            for (j=0; j < MAX_CLIENTS; j++)
+            {
+                pthread_mutex_lock(&currentIndexMutex);
+                if(connectedSocket[j]!=-1)
+                {
+                    Send(connectedSocket[j],ToString(1000)+Config.EndTrame);
+                    connectedSocket[j] = -1;
+                }
+                pthread_mutex_unlock(&currentIndexMutex);
+            }
         }
     }
 }
