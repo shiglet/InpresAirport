@@ -23,6 +23,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -37,6 +39,7 @@ import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -48,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.swing.JOptionPane;
+import message.ConfirmPayMessage;
 import message.FlyMessage;
 import message.HandshakeMessage;
 import message.LoginMessage;
@@ -73,9 +77,10 @@ public class ServletController extends HttpServlet {
     public BeanBDAccess bd;
     private Configuration config;
     
-    
+    private PublicKey serverPK;
     private void getKeys()
     {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         try 
         {
             String keystorePassword = config.getPropertie("KEYSTORE_PASS");
@@ -83,6 +88,8 @@ public class ServletController extends HttpServlet {
             ks.load(new FileInputStream("C:\\Users\\Sadik\\Desktop\\InpresAirport\\Resources\\Web.keystore"),keystorePassword.toCharArray());
             webK = (PrivateKey) ks.getKey("webkey", keystorePassword.toCharArray());
             System.out.println("Key chargé");
+            X509Certificate cert = (X509Certificate) (ks.getCertificate("servercertificat"));
+            serverPK = cert.getPublicKey();
             
         }
         catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) 
@@ -280,18 +287,44 @@ public class ServletController extends HttpServlet {
                         HttpSession session = request.getSession();
                         if(bank!= null && !bank.isEmpty())
                         {
+                            
                             String login = (String)session.getAttribute("Connected"); 
                             String total = (String) request.getParameter("total");
+                            
                             /*ResultSet rs = bd.executeQuery("SELECT * FROM RESERVATION");
                             while(rs.next())
                             {
                             int nbrPlace = rs.getInt("Place");
-                            bd.insertQuery("INSERT INTO Billets (login,NombrePassager, idVol) VALUES('"+login+"',"+nbrPlace+","+rs.getInt("idVol")+")");
                             bd.insertQuery("DELETE FROM RESERVATION WHERE idReservation = "+rs.getInt("idReservation"));
                             bd.insertQuery("INSERT INTO facture (login,total) VALUES('"+login+"',"+total+")");
                             }*/
                             login();
-                            message = "Merci pour votre payement !";
+                            
+                            Cipher cipher;
+                            try 
+                            {
+                                cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+                                cipher.init(Cipher.ENCRYPT_MODE,serverPK);
+                                Mac hmac = Mac.getInstance("HMAC-MD5","BC");
+                                hmac.init(authenticationK);
+                                hmac.update(bank.getBytes());
+                                byte [] hmacBytes = hmac.doFinal();
+                                oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_CONFIRMPAY, new ConfirmPayMessage(ConfirmPayMessage.SUCCESS,hmacBytes,cipher.doFinal(bank.getBytes()),login)));
+                                TICKMAPResponse rep = (TICKMAPResponse) ois.readObject();
+                                if(rep.getCode() == rep.SUCCESS)
+                                {
+                                    message = "Merci pour votre payement !";
+                                }
+                                else
+                                {
+                                    message = "Erreur lors du payement !";
+                                }
+                            } 
+                            catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | ClassNotFoundException ex) 
+                            {
+                                Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            logout();
                         }
                         else
                         {

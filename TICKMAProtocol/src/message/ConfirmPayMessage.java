@@ -18,6 +18,11 @@ public class ConfirmPayMessage implements Message
     private int type;
     private byte[] hmac;
     private byte[] carte;
+    private String login;
+
+    public String getLogin() {
+        return login;
+    }
 
     public int getType() {
         return type;
@@ -47,5 +52,11 @@ public class ConfirmPayMessage implements Message
         this.type = type;
         this.hmac = hmac;
         this.carte = carte;
+    }
+    public ConfirmPayMessage(int type, byte[] hmac, byte[] carte,String login) {
+        this.type = type;
+        this.hmac = hmac;
+        this.carte = carte;
+        this.login = login;
     }
 }

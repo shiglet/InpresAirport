@@ -89,6 +89,7 @@ public class TICKMAPRequest implements Request, Serializable
     {
         return new Runnable()
         {
+            private boolean web = false;
             private String state = "NON_AUTHENTICATED";
             private BeanBDAccess bd = beanBD;
             private TICKMAPResponse rep;
@@ -122,6 +123,7 @@ public class TICKMAPRequest implements Request, Serializable
                             disconnected = true;
                             break;
                         case REQUEST_WEBHANDSHAKE :
+                            web = true;
                         case REQUEST_HANDSHAKE : 
                             treatHandshake();
                             break;
@@ -132,7 +134,10 @@ public class TICKMAPRequest implements Request, Serializable
                             treatConfirmFly();
                             break;
                         case REQUEST_CONFIRMPAY :
-                            treatConfirmPay();
+                            if(!web)
+                                treatConfirmPay();
+                            else 
+                                treatConfirmPayWeb();
                         break;
                     }
                     try 
@@ -247,9 +252,9 @@ public class TICKMAPRequest implements Request, Serializable
                         
                         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
                         if(req.getType() == REQUEST_WEBHANDSHAKE)
-                            cipher.init(Cipher.ENCRYPT_MODE, clientPK);
-                        else
                             cipher.init(Cipher.ENCRYPT_MODE, webPK);
+                        else
+                            cipher.init(Cipher.ENCRYPT_MODE, clientPK);
                         
                         byte[] authKeyEncrypted = cipher.doFinal(authenticationK.getEncoded());
                         byte[] cipherKeyEncrypted = cipher.doFinal(cipherK.getEncoded());
@@ -476,6 +481,64 @@ public class TICKMAPRequest implements Request, Serializable
                 }
             }
 
+            private void treatConfirmPayWeb() 
+            {
+                System.out.println("FINAL");
+                ConfirmPayMessage message = (ConfirmPayMessage) req.getMessage();
+                byte[] encryptedCarte = message.getCarte();
+                byte[] hmacRecu = message.getHmac();
+                
+                try 
+                {
+                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+                    cipher.init(Cipher.DECRYPT_MODE, serverPrK);
+                    
+                    String carte = new String(cipher.doFinal(encryptedCarte));
+                    System.out.println("Carte sur serveur = "+carte);
+                    String login = message.getLogin();
+                    Mac hLocal = Mac.getInstance("HMAC-MD5","BC");
+                    hLocal.init(authenticationK);
+                    hLocal.update(carte.getBytes());
+                    byte[] hbLocal = hLocal.doFinal();
+                    if(MessageDigest.isEqual(hmacRecu, hbLocal))
+                    {
+                        cs.trace("server#HMAC vérifié");
+                        int total = 0;
+                        rs = bd.executeQuery("SELECT * FROM vols where idVol in (SELECT idVol FROM reservation where client = '"+login+"')");
+                        while(rs.next())
+                        {
+                            int prixPlace = rs.getInt("PrixPlace");
+                            ResultSet r = bd.executeQuery("SELECT * FROM reservation where client = '"+login+"' AND idVol ="+rs.getInt("idVol"));
+                            while(r.next())
+                            {
+                                total = total + (r.getInt("place")* prixPlace);
+                            }
+                        }
+                        if(message.getType()==message.SUCCESS)
+                        {
+                            bd.insertQuery("DELETE FROM RESERVATION WHERE client = '"+login+"'");
+                            bd.insertQuery("INSERT INTO facture (login,total,carte) VALUES('"+login+"',"+total+","+carte+")");
+                            rep = new TICKMAPResponse(TICKMAPResponse.SUCCESS);
+                        }
+                        else
+                        {
+                            cancelBook();
+                            bd.insertQuery("INSERT INTO facture (login,total,carte) VALUES('"+login+"',"+total+",'"+carte+" payement refusé !')");
+                        }
+                    }
+                    else
+                    {
+                        cs.trace("server#HMAC incorrecte");
+                        rep = new TICKMAPResponse(TICKMAPResponse.FAILED);
+                        cancelBook();
+                    }
+                }
+                catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | SQLException ex)
+                {
+                    Logger.getLogger(TICKMAPRequest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
             private void cancelBook() 
             {
                 try 
