@@ -5,10 +5,27 @@
  */
 package servlet;
 
+import ConfigurationFile.Configuration;
 import Model.Fly;
 import database.utilities.BeanBDAccess;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -17,6 +34,12 @@ import java.util.TimerTask;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -24,6 +47,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.swing.JOptionPane;
+import message.FlyMessage;
+import message.HandshakeMessage;
+import message.LoginMessage;
+import request.TICKMAPRequest;
+import response.TICKMAPResponse;
 
 /**
  *
@@ -42,7 +71,26 @@ public class ServletController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     public BeanBDAccess bd;
+    private Configuration config;
     
+    
+    private void getKeys()
+    {
+        try 
+        {
+            String keystorePassword = config.getPropertie("KEYSTORE_PASS");
+            KeyStore ks = KeyStore.getInstance("jks");
+            ks.load(new FileInputStream("C:\\Users\\Sadik\\Desktop\\InpresAirport\\Resources\\Web.keystore"),keystorePassword.toCharArray());
+            webK = (PrivateKey) ks.getKey("webkey", keystorePassword.toCharArray());
+            System.out.println("Key chargé");
+            
+        }
+        catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) 
+        {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(0);
+        }
+    }
     @Override
     public void destroy()
     {
@@ -51,8 +99,10 @@ public class ServletController extends HttpServlet {
     @Override
     public void init()
     {
+        config = new Configuration("C:\\Users\\Sadik\\Desktop\\InpresAirport\\Resources\\Configuration.properties");
         bd = new BeanBDAccess("MYSQL","bd_airport","root","sadikano","localhost");
         bd.connectDB();
+        getKeys();
         System.out.println("Lancement du timer de néttoyage !");
         new Timer().scheduleAtFixedRate(new TimerTask() 
         {
@@ -230,24 +280,18 @@ public class ServletController extends HttpServlet {
                         HttpSession session = request.getSession();
                         if(bank!= null && !bank.isEmpty())
                         {
-                            try 
+                            String login = (String)session.getAttribute("Connected"); 
+                            String total = (String) request.getParameter("total");
+                            /*ResultSet rs = bd.executeQuery("SELECT * FROM RESERVATION");
+                            while(rs.next())
                             {
-                                String login = (String)session.getAttribute("Connected");
-                                String total = (String) request.getParameter("total");
-                                ResultSet rs = bd.executeQuery("SELECT * FROM RESERVATION");
-                                while(rs.next())
-                                {
-                                    int nbrPlace = rs.getInt("Place");
-                                    bd.insertQuery("INSERT INTO Billets (login,NombrePassager, idVol) VALUES('"+login+"',"+nbrPlace+","+rs.getInt("idVol")+")");
-                                    bd.insertQuery("DELETE FROM RESERVATION WHERE idReservation = "+rs.getInt("idReservation"));
-                                    bd.insertQuery("INSERT INTO facture (login,total) VALUES('"+login+"',"+total+")");
-                                }
-                                message = "Merci pour votre payement !";
-                            } catch (SQLException ex) 
-                            {
-                                request.setAttribute("Message", "Erreur lors du payement !");
-                                Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                            int nbrPlace = rs.getInt("Place");
+                            bd.insertQuery("INSERT INTO Billets (login,NombrePassager, idVol) VALUES('"+login+"',"+nbrPlace+","+rs.getInt("idVol")+")");
+                            bd.insertQuery("DELETE FROM RESERVATION WHERE idReservation = "+rs.getInt("idReservation"));
+                            bd.insertQuery("INSERT INTO facture (login,total) VALUES('"+login+"',"+total+")");
+                            }*/
+                            login();
+                            message = "Merci pour votre payement !";
                         }
                         else
                         {
@@ -271,7 +315,7 @@ public class ServletController extends HttpServlet {
         
         try {
             //chercher billet
-            ResultSet rs = bd.executeQuery("SELECT * FROM vols");
+            ResultSet rs = bd.executeQuery("SELECT * FROM vols where heureDepart > now()");
             Vector<Fly> lFly = new Vector<Fly>();
             while(rs.next())
             {
@@ -363,5 +407,125 @@ public class ServletController extends HttpServlet {
         {
             Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    private void logout() 
+    {
+        if(socket==null || socket.isClosed())
+                return;
+        try
+        {
+            oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_LOGOUT));
+            TICKMAPResponse rep = (TICKMAPResponse) ois.readObject();
+            if(rep.getCode() == TICKMAPResponse.SUCCESS)
+                System.out.println("Deconnexion réussie !");
+            oos.close();
+            ois.close();
+            socket.close();
+        } 
+        catch (IOException ex) 
+        {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void handshake() 
+    {
+        try 
+        {
+            oos.writeObject(new TICKMAPRequest(TICKMAPRequest.REQUEST_WEBHANDSHAKE));
+            TICKMAPResponse rep = (TICKMAPResponse) ois.readObject();
+            if(rep.isSuccess())
+            {
+                System.out.println("Handshake ok !");
+                //Encrypted secret keys
+                byte[] a = ((HandshakeMessage)rep.getMessage()).getAuthenticationK();
+                byte[] c = ((HandshakeMessage)rep.getMessage()).getCipherK();
+                //Get a Cipher object
+                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
+                cipher.init(Cipher.DECRYPT_MODE, webK);
+                //Decrypt the keys
+                byte[] authKeyBytes = cipher.doFinal(a);
+                byte[] cipherKeyBytes = cipher.doFinal(c);
+                //Convert Byte keys  into SecretKey
+                authenticationK = new SecretKeySpec(authKeyBytes, 0, authKeyBytes.length, "Rijndael");
+                cipherK = new SecretKeySpec(cipherKeyBytes, 0, cipherKeyBytes.length, "Rijndael");
+                rep = (TICKMAPResponse)ois.readObject();
+            }
+            else
+            {
+                logout();
+            }
+        }
+        catch (IOException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) 
+        {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private Socket socket;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
+    private PrivateKey webK;
+    private SecretKey authenticationK;
+    private SecretKey cipherK;
+    private void login()
+    {
+        String login="web", password="web";
+        String IP = config.getPropertie("BILLETS_IP");
+        int port = Integer.parseInt(config.getPropertie("PORT_BILLETS"));
+        try 
+        {
+                System.out.println(password);
+                Socket socket = new Socket(IP,port);
+                oos = new ObjectOutputStream(socket.getOutputStream());
+                ois = new ObjectInputStream(socket.getInputStream());
+                long time = (new Date()).getTime();
+                double r = Math.random();
+                
+                byte[] msgD = buildDigest(time,r,password,login);
+                System.out.println("l = "+login+" r = "+r+" time = "+time+"");
+                TICKMAPRequest req = new TICKMAPRequest(TICKMAPRequest.REQUEST_LOGIN,new LoginMessage(r,msgD,login,time));
+                oos.writeObject(req);
+                TICKMAPResponse rep = (TICKMAPResponse)ois.readObject();
+                if(rep.getCode() == TICKMAPResponse.SUCCESS)
+                {
+                    System.out.println("Login billets ok !");
+                    handshake();
+                }
+                else
+                {
+                    System.out.println("Login billes notok !");
+                }
+
+        } 
+        catch (IOException | ClassNotFoundException ex) 
+        {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+    }
+    
+    public byte[] buildDigest(long time,double r,String password,String login)
+    {
+        byte[] msgD = null;
+        try 
+        {
+            MessageDigest md = MessageDigest.getInstance("SHA-1", "BC");
+            md.update(login.getBytes());
+            md.update(password.getBytes());
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream bdos = new DataOutputStream(baos);
+            bdos.writeLong(time);
+            bdos.writeDouble(r);
+            
+            md.update(baos.toByteArray());
+            msgD = md.digest();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | IOException ex) {
+            Logger.getLogger(ServletController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return msgD;
     }
 }

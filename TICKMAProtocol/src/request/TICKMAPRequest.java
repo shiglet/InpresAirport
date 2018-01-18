@@ -64,6 +64,7 @@ public class TICKMAPRequest implements Request, Serializable
     public static final int REQUEST_BOOKFLY = 3;
     public static final int REQUEST_CONFIRMFLY = 4;
     public static final int REQUEST_CONFIRMPAY = 5;
+    public static final int REQUEST_WEBHANDSHAKE = 6;
     
     private int type;
 
@@ -96,6 +97,7 @@ public class TICKMAPRequest implements Request, Serializable
             private String keystorePassword;
             private ResultSet rs;
             private PublicKey clientPK;
+            private PublicKey webPK;
             private PublicKey serverPK;
             private PrivateKey serverPrK;
             private SecretKey authenticationK;
@@ -119,6 +121,7 @@ public class TICKMAPRequest implements Request, Serializable
                             treatLogout();
                             disconnected = true;
                             break;
+                        case REQUEST_WEBHANDSHAKE :
                         case REQUEST_HANDSHAKE : 
                             treatHandshake();
                             break;
@@ -243,7 +246,10 @@ public class TICKMAPRequest implements Request, Serializable
                         byte[] cipherKBytes = cipherK.getEncoded();
                         
                         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", "BC");
-                        cipher.init(Cipher.ENCRYPT_MODE, clientPK);
+                        if(req.getType() == REQUEST_WEBHANDSHAKE)
+                            cipher.init(Cipher.ENCRYPT_MODE, clientPK);
+                        else
+                            cipher.init(Cipher.ENCRYPT_MODE, webPK);
                         
                         byte[] authKeyEncrypted = cipher.doFinal(authenticationK.getEncoded());
                         byte[] cipherKeyEncrypted = cipher.doFinal(cipherK.getEncoded());
@@ -298,6 +304,8 @@ public class TICKMAPRequest implements Request, Serializable
                     serverPrK = (PrivateKey) ks.getKey("serveur", keystorePassword.toCharArray());
                     X509Certificate cert = (X509Certificate) (ks.getCertificate("clientcertificat"));
                     clientPK = cert.getPublicKey();
+                    cert = (X509Certificate) (ks.getCertificate("webcertificat"));
+                    webPK = cert.getPublicKey();
                 }
                 catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException | UnrecoverableKeyException ex) 
                 {
