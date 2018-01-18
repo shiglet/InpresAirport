@@ -230,32 +230,24 @@ public class ServletController extends HttpServlet {
                                 {
                                     int idVol = rs.getInt("idVol");
                                     String place = request.getParameter(""+idVol);
+                                    if(place == null)
+                                        System.out.println("C'est null pour idVol ="+idVol);
+                                    else
+                                        System.out.println("idVol = "+idVol);
                                     if(place!= null && Integer.parseInt(place) !=0)
                                     {
+                                        
+                                        System.out.println("PLACE :: "+place);
                                         //reservation
                                         if(rs.getInt("PlaceRestante") - Integer.parseInt(place) >=0)
                                         {
                                             bd.insertQuery("INSERT INTO RESERVATION (`client`, `Place`, `idVol`) VALUES('"+login+"',"+place+","+idVol+")");
                                             bd.insertQuery("UPDATE vols set PlaceRestante = PlaceRestante - "+place+" where idVol = "+idVol+"");
-                                            setReservation(request);
-                                            request.getRequestDispatcher("/WEB-INF/JSPPay.jsp").forward(request, response);
-                                            break;
                                         }
-                                        else
-                                        {
-                                            //pas assez de place !
-                                            request.setAttribute("Message", "Pas assez de place restante pour le vol souhaité. Réessayez...");
-                                            setFlyList(request);
-                                            request.getRequestDispatcher("/WEB-INF/JSPCaddie.jsp").forward(request, response);
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        setFlyList(request);
-                                        request.getRequestDispatcher("/WEB-INF/JSPCaddie.jsp").forward(request, response);
                                     }
                                 }
+                                setReservation(request);
+                                request.getRequestDispatcher("/WEB-INF/JSPPay.jsp").forward(request, response);
                             }
                         } 
                         catch (SQLException ex) 
